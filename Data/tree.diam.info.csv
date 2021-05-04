@@ -1,0 +1,151 @@
+﻿Node,Channel,Sensor Loaction,Reading on data file,Species,Tree ID,Depth,Orientation,Diameter category,Diameter,Unique name ID,Status name,Depth
+NodeONE_,1,19W,Granier_Avg(1),Spruce,19,_02CM_,West,_15:25DIAM_,15.7,NodeONE_1Spruce19_02CM_West_15:25DIAM_,NodeONE_1_Status,02CM
+NodeONE_,2,19E,Granier_Avg(2),Spruce,19,_02CM_,East,_15:25DIAM_,15.7,NodeONE_2Spruce19_02CM_East_15:25DIAM_,NodeONE_2_Status,02CM
+NodeONE_,3,19N,Granier_Avg(3),Spruce,19,_02CM_,North,_15:25DIAM_,15.7,NodeONE_3Spruce19_02CM_North_15:25DIAM_,NodeONE_3_Status,02CM
+NodeONE_,4,14 (0-2),Granier_Avg(4),Spruce,14,_02CM_,Random,_7:15DIAM_,14.35,NodeONE_4Spruce14_02CM_Random_7:15DIAM_,NodeONE_4_Status,02CM
+NodeONE_,5,19S,Granier_Avg(5),Spruce,19,_02CM_,South,_15:25DIAM_,15.7,NodeONE_5Spruce19_02CM_South_15:25DIAM_,NodeONE_5_Status,02CM
+NodeONE_,6,9 (0-2),Granier_Avg(6),Pine,9,_02CM_,Random,_7:15DIAM_,12.45,NodeONE_6Pine9_02CM_Random_7:15DIAM_,NodeONE_6_Status,02CM
+NodeONE_,7,15 (0-2),Granier_Avg(7),Pine,15,_02CM_,Random,_7:15DIAM_,11.8,NodeONE_7Pine15_02CM_Random_7:15DIAM_,NodeONE_7_Status,02CM
+NodeONE_,8,9 (2-4),Granier_Avg(8),Pine,9,_24CM_,Random,_7:15DIAM_,12.45,NodeONE_8Pine9_24CM_Random_7:15DIAM_,NodeONE_8_Status,24CM
+NodeONE_,9,10 (0-2),Granier_Avg(9),Spruce,10,_02CM_,Random,_15:25DIAM_,22.45,NodeONE_9Spruce10_02CM_Random_15:25DIAM_,NodeONE_9_Status,02CM
+NodeONE_,10,10 (2-4),Granier_Avg(10),Spruce,10,_24CM_,Random,_15:25DIAM_,22.45,NodeONE_10Spruce10_24CM_Random_15:25DIAM_,NodeONE_10_Status,24CM
+NodeONE_,11,10 (4-6),Granier_Avg(11),Spruce,10,_46CM_,Random,_15:25DIAM_,22.45,NodeONE_11Spruce10_46CM_Random_15:25DIAM_,NodeONE_11_Status,46CM
+NodeONE_,12,11 (2-4),Granier_Avg(12),Spruce,11,_24CM_,Random,_25:30DIAM_,31.2,NodeONE_12Spruce11_24CM_Random_25:30DIAM_,NodeONE_12_Status,24CM
+NodeONE_,13,11 (4-6),Granier_Avg(13),Spruce,11,_46CM_,Random,_25:30DIAM_,31.2,NodeONE_13Spruce11_46CM_Random_25:30DIAM_,NodeONE_13_Status,46CM
+NodeONE_,14,12 (0-2),Granier_Avg(14),Pine,12,_02CM_,Random,_15:25DIAM_,21.15,NodeONE_14Pine12_02CM_Random_15:25DIAM_,NodeONE_14_Status,02CM
+NodeONE_,15,12 (2-4),Granier_Avg(15),Pine,12,_24CM_,Random,_15:25DIAM_,21.15,NodeONE_15Pine12_24CM_Random_15:25DIAM_,NodeONE_15_Status,24CM
+NodeONE_,16,12 (4-6),Granier_Avg(16),Pine,12,_46CM_,Random,_15:25DIAM_,21.15,NodeONE_16Pine12_46CM_Random_15:25DIAM_,NodeONE_16_Status,46CM
+NodeONE_,17,1 (4-6),Granier_Avg(17),Pine,1,_46CM_,Random,_25:30DIAM_,25.85,NodeONE_17Pine1_46CM_Random_25:30DIAM_,NodeONE_17_Status,46CM
+NodeONE_,18,2 (0-2),Granier_Avg(18),Spruce,2,_02CM_,Random,_7:15DIAM_,11.55,NodeONE_18Spruce2_02CM_Random_7:15DIAM_,NodeONE_18_Status,02CM
+NodeONE_,19,17 (0-2),Granier_Avg(19),Pine,17,_02CM_,Random,_25:30DIAM_,26.15,NodeONE_19Pine17_02CM_Random_25:30DIAM_,NodeONE_19_Status,02CM
+NodeONE_,20,3 (0-2),Granier_Avg(20),Pine,3,_02CM_,Random,_15:25DIAM_,17.4,NodeONE_20Pine3_02CM_Random_15:25DIAM_,NodeONE_20_Status,02CM
+NodeONE_,21,2 (2-4),Granier_Avg(21),Spruce,2,_24CM_,Random,_7:15DIAM_,11.55,NodeONE_21Spruce2_24CM_Random_7:15DIAM_,NodeONE_21_Status,24CM
+NodeONE_,22,1 (2-4),Granier_Avg(22),Pine,1,_24CM_,Random,_25:30DIAM_,25.85,NodeONE_22Pine1_24CM_Random_25:30DIAM_,NodeONE_22_Status,24CM
+NodeONE_,23,1 (0-2),Granier_Avg(23),Pine,1,_02CM_,Random,_25:30DIAM_,25.85,NodeONE_23Pine1_02CM_Random_25:30DIAM_,NodeONE_23_Status,02CM
+NodeONE_,24,5 (0-2),Granier_Avg(24),Spruce,5,_02CM_,Random,_7:15DIAM_,6.85,NodeONE_24Spruce5_02CM_Random_7:15DIAM_,NodeONE_24_Status,02CM
+NodeONE_,25,17 (2-4),Granier_Avg(25),Pine,17,_24CM_,Random,_25:30DIAM_,26.15,NodeONE_25Pine17_24CM_Random_25:30DIAM_,NodeONE_25_Status,24CM
+NodeONE_,26,6 (0-2),Granier_Avg(26),Pine,6,_02CM_,Random,_7:15DIAM_,9.7,NodeONE_26Pine6_02CM_Random_7:15DIAM_,NodeONE_26_Status,02CM
+NodeONE_,27,7 (2-4),Granier_Avg(27),Pine,7,_24CM_,Random,_7:15DIAM_,13.8,NodeONE_27Pine7_24CM_Random_7:15DIAM_,NodeONE_27_Status,24CM
+NodeONE_,28,20 (0-2),Granier_Avg(28),Spruce,20,_02CM_,Random,_7:15DIAM_,7.65,NodeONE_28Spruce20_02CM_Random_7:15DIAM_,NodeONE_28_Status,02CM
+NodeONE_,29,7 (0-2),Granier_Avg(29),Pine,7,_02CM_,Random,_7:15DIAM_,13.8,NodeONE_29Pine7_02CM_Random_7:15DIAM_,NodeONE_29_Status,02CM
+NodeONE_,30,11 (0-2),Granier_Avg(30),Spruce,11,_02CM_,Random,_25:30DIAM_,31.2,NodeONE_30Spruce11_02CM_Random_25:30DIAM_,NodeONE_30_Status,02CM
+NodeONE_,31,4 (0-2),Granier_Avg(31),Spruce,4,_02CM_,Random,_15:25DIAM_,20.35,NodeONE_31Spruce4_02CM_Random_15:25DIAM_,NodeONE_31_Status,02CM
+NodeONE_,32,11 (6-8),Granier_Avg(32),Spruce,11,_68CM_,Random,_25:30DIAM_,31.2,NodeONE_32Spruce11_68CM_Random_25:30DIAM_,NodeONE_32_Status,68CM
+NodeONE_,33,1 (6-8),Granier_2_Avg(1),Pine,1,_68CM_,Random,_25:30DIAM_,25.85,NodeONE_33Pine1_68CM_Random_25:30DIAM_,NodeONE_33_Status,68CM
+NodeONE_,34,4 (2-4),Granier_2_Avg(2),Spruce,4,_24CM_,Random,_15:25DIAM_,20.35,NodeONE_34Spruce4_24CM_Random_15:25DIAM_,NodeONE_34_Status,24CM
+NodeONE_,35,16E,Granier_2_Avg(3),Pine,16,_02CM_,East,_15:25DIAM_,20.9,NodeONE_35Pine16_02CM_East_15:25DIAM_,NodeONE_35_Status,02CM
+NodeONE_,36,16S,Granier_2_Avg(4),Pine,16,_02CM_,South,_15:25DIAM_,20.9,NodeONE_36Pine16_02CM_South_15:25DIAM_,NodeONE_36_Status,02CM
+NodeONE_,37,16N,Granier_2_Avg(5),Pine,16,_02CM_,North,_15:25DIAM_,20.9,NodeONE_37Pine16_02CM_North_15:25DIAM_,NodeONE_37_Status,02CM
+NodeONE_,38,16W,Granier_2_Avg(6),Pine,16,_02CM_,West,_15:25DIAM_,20.9,NodeONE_38Pine16_02CM_West_15:25DIAM_,NodeONE_38_Status,02CM
+NodeONE_,39,18 (6-8),Granier_2_Avg(7),Spruce,18,_68CM_,Random,_25:30DIAM_,27.5,NodeONE_39Spruce18_68CM_Random_25:30DIAM_,NodeONE_39_Status,68CM
+NodeONE_,40,13 (6-8),Granier_2_Avg(8),Pine,13,_68CM_,Random,_15:25DIAM_,18.3,NodeONE_40Pine13_68CM_Random_15:25DIAM_,NodeONE_40_Status,68CM
+NodeONE_,41,8 (2-4),Granier_2_Avg(9),Spruce,8,_24CM_,Random,_15:25DIAM_,16,NodeONE_41Spruce8_24CM_Random_15:25DIAM_,NodeONE_41_Status,24CM
+NodeONE_,42,8 (0-2),Granier_2_Avg(10),Spruce,8,_02CM_,Random,_15:25DIAM_,16,NodeONE_42Spruce8_02CM_Random_15:25DIAM_,NodeONE_42_Status,02CM
+NodeONE_,43,13 (0-2),Granier_2_Avg(11),Pine,13,_02CM_,Random,_15:25DIAM_,18.3,NodeONE_43Pine13_02CM_Random_15:25DIAM_,NodeONE_43_Status,02CM
+NodeONE_,44,13 (2-4),Granier_2_Avg(12),Pine,13,_24CM_,Random,_15:25DIAM_,18.3,NodeONE_44Pine13_24CM_Random_15:25DIAM_,NodeONE_44_Status,24CM
+NodeONE_,45,13 (4-6),Granier_2_Avg(13),Pine,13,_46CM_,Random,_15:25DIAM_,18.3,NodeONE_45Pine13_46CM_Random_15:25DIAM_,NodeONE_45_Status,46CM
+NodeONE_,46,18 (4-6),Granier_2_Avg(14),Spruce,18,_46CM_,Random,_25:30DIAM_,27.5,NodeONE_46Spruce18_46CM_Random_25:30DIAM_,NodeONE_46_Status,46CM
+NodeONE_,47,10 (6-8),Granier_2_Avg(15),Spruce,10,_68CM_,Random,_15:25DIAM_,22.45,NodeONE_47Spruce10_68CM_Random_15:25DIAM_,NodeONE_47_Status,68CM
+NodeONE_,48,12 (6-8),Granier_2_Avg(16),Pine,12,_68CM_,Random,_15:25DIAM_,21.15,NodeONE_48Pine12_68CM_Random_15:25DIAM_,NodeONE_48_Status,68CM
+NodeONE_,49,18 (2-4),Granier_2_Avg(17),Spruce,18,_24CM_,Random,_25:30DIAM_,27.5,NodeONE_49Spruce18_24CM_Random_25:30DIAM_,NodeONE_49_Status,24CM
+NodeONE_,50,18 (0-2),Granier_2_Avg(18),Spruce,18,_02CM_,Random,_25:30DIAM_,27.5,NodeONE_50Spruce18_02CM_Random_25:30DIAM_,NodeONE_50_Status,02CM
+NodeTWO_,1,18 (6-8),Granier_Avg(1),Spruce,18,_68CM_,Random,_15:25DIAM_,20,NodeTWO_1Spruce18_68CM_Random_15:25DIAM_,NodeTWO_1_Status,68CM
+NodeTWO_,2,20 (6-8),Granier_Avg(2),Pine,20,_68CM_,Random,_25:30DIAM_,29.5,NodeTWO_2Pine20_68CM_Random_25:30DIAM_,NodeTWO_2_Status,68CM
+NodeTWO_,3,20 (0-2),Granier_Avg(3),Pine,20,_02CM_,Random,_25:30DIAM_,29.5,NodeTWO_3Pine20_02CM_Random_25:30DIAM_,NodeTWO_3_Status,02CM
+NodeTWO_,4,20 (2-4),Granier_Avg(4),Pine,20,_24CM_,Random,_25:30DIAM_,29.5,NodeTWO_4Pine20_24CM_Random_25:30DIAM_,NodeTWO_4_Status,24CM
+NodeTWO_,5,18 (4-6),Granier_Avg(5),Spruce,18,_46CM_,Random,_15:25DIAM_,20,NodeTWO_5Spruce18_46CM_Random_15:25DIAM_,NodeTWO_5_Status,46CM
+NodeTWO_,6,18 (2-4),Granier_Avg(6),Spruce,18,_24CM_,Random,_15:25DIAM_,20,NodeTWO_6Spruce18_24CM_Random_15:25DIAM_,NodeTWO_6_Status,24CM
+NodeTWO_,7,20 (4-6),Granier_Avg(7),Pine,20,_46CM_,Random,_25:30DIAM_,29.5,NodeTWO_7Pine20_46CM_Random_25:30DIAM_,NodeTWO_7_Status,46CM
+NodeTWO_,8,18 (0-2),Granier_Avg(8),Spruce,18,_02CM_,Random,_15:25DIAM_,20,NodeTWO_8Spruce18_02CM_Random_15:25DIAM_,NodeTWO_8_Status,02CM
+NodeTWO_,9,17 (0-2),Granier_Avg(9),Spruce,17,_02CM_,Random,_7:15DIAM_,13.5,NodeTWO_9Spruce17_02CM_Random_7:15DIAM_,NodeTWO_9_Status,02CM
+NodeTWO_,10,19 (2-4),Granier_Avg(10),Spruce,19,_24CM_,Random,_15:25DIAM_,18.7,NodeTWO_10Spruce19_24CM_Random_15:25DIAM_,NodeTWO_10_Status,24CM
+NodeTWO_,11,19 (6-8),Granier_Avg(11),Spruce,19,_68CM_,Random,_15:25DIAM_,18.7,NodeTWO_11Spruce19_68CM_Random_15:25DIAM_,NodeTWO_11_Status,68CM
+NodeTWO_,12,17 (2-4),Granier_Avg(12),Spruce,17,_24CM_,Random,_7:15DIAM_,13.5,NodeTWO_12Spruce17_24CM_Random_7:15DIAM_,NodeTWO_12_Status,24CM
+NodeTWO_,13,19 (0-2),Granier_Avg(13),Spruce,19,_02CM_,Random,_15:25DIAM_,18.7,NodeTWO_13Spruce19_02CM_Random_15:25DIAM_,NodeTWO_13_Status,02CM
+NodeTWO_,14,19 (4-6),Granier_Avg(14),Spruce,19,_46CM_,Random,_15:25DIAM_,18.7,NodeTWO_14Spruce19_46CM_Random_15:25DIAM_,NodeTWO_14_Status,46CM
+NodeTWO_,15,16 (0-2),Granier_Avg(15),Pine,16,_02CM_,Random,_7:15DIAM_,13.7,NodeTWO_15Pine16_02CM_Random_7:15DIAM_,NodeTWO_15_Status,02CM
+NodeTWO_,16,3 (0-2),Granier_Avg(16),Spruce,3,_02CM_,Random,_15:25DIAM_,16.9,NodeTWO_16Spruce3_02CM_Random_15:25DIAM_,NodeTWO_16_Status,02CM
+NodeTWO_,17,3 (2-4),Granier_Avg(17),Spruce,3,_24CM_,Random,_15:25DIAM_,16.9,NodeTWO_17Spruce3_24CM_Random_15:25DIAM_,NodeTWO_17_Status,24CM
+NodeTWO_,18,4 (4-6),Granier_Avg(18),Pine,4,_46CM_,Random,_25:30DIAM_,32.2,NodeTWO_18Pine4_46CM_Random_25:30DIAM_,NodeTWO_18_Status,46CM
+NodeTWO_,19,4 (2-4),Granier_Avg(19),Pine,4,_24CM_,Random,_25:30DIAM_,32.2,NodeTWO_19Pine4_24CM_Random_25:30DIAM_,NodeTWO_19_Status,24CM
+NodeTWO_,20,3 (4-6),Granier_Avg(20),Spruce,3,_46CM_,Random,_15:25DIAM_,16.9,NodeTWO_20Spruce3_46CM_Random_15:25DIAM_,NodeTWO_20_Status,46CM
+NodeTWO_,21,1 (0-2),Granier_Avg(21),Pine,1,_02CM_,Random,_15:25DIAM_,21.3,NodeTWO_21Pine1_02CM_Random_15:25DIAM_,NodeTWO_21_Status,02CM
+NodeTWO_,22,2 (0-2),Granier_Avg(22),Spruce,2,_02CM_,Random,_7:15DIAM_,12.1,NodeTWO_22Spruce2_02CM_Random_7:15DIAM_,NodeTWO_22_Status,02CM
+NodeTWO_,23,4 (0-2),Granier_Avg(23),Pine,4,_02CM_,Random,_25:30DIAM_,32.2,NodeTWO_23Pine4_02CM_Random_25:30DIAM_,NodeTWO_23_Status,02CM
+NodeTWO_,24,4 (6-8),Granier_Avg(24),Pine,4,_68CM_,Random,_25:30DIAM_,32.2,NodeTWO_24Pine4_68CM_Random_25:30DIAM_,NodeTWO_24_Status,68CM
+NodeTWO_,25,12 (6-8),Granier_Avg(25),Pine,12,_68CM_,Random,_25:30DIAM_,26,NodeTWO_25Pine12_68CM_Random_25:30DIAM_,NodeTWO_25_Status,68CM
+NodeTWO_,26,12 (4-6),Granier_Avg(26),Pine,12,_46CM_,Random,_25:30DIAM_,26,NodeTWO_26Pine12_46CM_Random_25:30DIAM_,NodeTWO_26_Status,46CM
+NodeTWO_,27,11 (2-4),Granier_Avg(27),Pine,11,_24CM_,Random,_15:25DIAM_,24.9,NodeTWO_27Pine11_24CM_Random_15:25DIAM_,NodeTWO_27_Status,24CM
+NodeTWO_,28,13 (0-2),Granier_Avg(28),Pine,13,_02CM_,Random,_7:15DIAM_,13.7,NodeTWO_28Pine13_02CM_Random_7:15DIAM_,NodeTWO_28_Status,02CM
+NodeTWO_,29,12 (2-4),Granier_Avg(29),Pine,12,_24CM_,Random,_25:30DIAM_,26,NodeTWO_29Pine12_24CM_Random_25:30DIAM_,NodeTWO_29_Status,24CM
+NodeTWO_,30,11 (0-2),Granier_Avg(30),Pine,11,_02CM_,Random,_15:25DIAM_,24.9,NodeTWO_30Pine11_02CM_Random_15:25DIAM_,NodeTWO_30_Status,02CM
+NodeTWO_,31,3 (6-8),Granier_Avg(31),Spruce,3,_68CM_,Random,_15:25DIAM_,16.9,NodeTWO_31Spruce3_68CM_Random_15:25DIAM_,NodeTWO_31_Status,68CM
+NodeTWO_,32,9 (2-4),Granier_Avg(32),Pine,9,_24CM_,Random,_7:15DIAM_,13.8,NodeTWO_32Pine9_24CM_Random_7:15DIAM_,NodeTWO_32_Status,24CM
+NodeTWO_,33,9 (0-2),Granier_2_Avg(1),Pine,9,_02CM_,Random,_7:15DIAM_,13.8,NodeTWO_33Pine9_02CM_Random_7:15DIAM_,NodeTWO_33_Status,02CM
+NodeTWO_,34,12 (0-2),Granier_2_Avg(2),Pine,12,_02CM_,Random,_25:30DIAM_,26,NodeTWO_34Pine12_02CM_Random_25:30DIAM_,NodeTWO_34_Status,02CM
+NodeTWO_,35,5 (0-2),Granier_2_Avg(3),Spruce,5,_02CM_,Random,_7:15DIAM_,7.9,NodeTWO_35Spruce5_02CM_Random_7:15DIAM_,NodeTWO_35_Status,02CM
+NodeTWO_,36,7S,Granier_2_Avg(4),Pine,7,_02CM_,South,_25:30DIAM_,39.8,NodeTWO_36Pine7_02CM_South_25:30DIAM_,NodeTWO_36_Status,02CM
+NodeTWO_,37,6 (0-2),Granier_2_Avg(5),Spruce,6,_02CM_,Random,_15:25DIAM_,15.2,NodeTWO_37Spruce6_02CM_Random_15:25DIAM_,NodeTWO_37_Status,02CM
+NodeTWO_,38,7E,Granier_2_Avg(6),Pine,7,_02CM_,East,_25:30DIAM_,39.8,NodeTWO_38Pine7_02CM_East_25:30DIAM_,NodeTWO_38_Status,02CM
+NodeTWO_,39,7N,Granier_2_Avg(7),Pine,7,_02CM_,North,_25:30DIAM_,39.8,NodeTWO_39Pine7_02CM_North_25:30DIAM_,NodeTWO_39_Status,02CM
+NodeTWO_,40,7W,Granier_2_Avg(8),Pine,7,_02CM_,West,_25:30DIAM_,39.8,NodeTWO_40Pine7_02CM_West_25:30DIAM_,NodeTWO_40_Status,02CM
+NodeTWO_,41,10 (0-2),Granier_2_Avg(9),Spruce,10,_02CM_,Random,_7:15DIAM_,9,NodeTWO_41Spruce10_02CM_Random_7:15DIAM_,NodeTWO_41_Status,02CM
+NodeTWO_,42,14 (0-2),Granier_2_Avg(10),Pine,14,_02CM_,Random,_15:25DIAM_,15.5,NodeTWO_42Pine14_02CM_Random_15:25DIAM_,NodeTWO_42_Status,02CM
+NodeTWO_,43,15 (0-2),Granier_2_Avg(11),Spruce,15,_02CM_,Random,_15:25DIAM_,20.8,NodeTWO_43Spruce15_02CM_Random_15:25DIAM_,NodeTWO_43_Status,02CM
+NodeTWO_,44,14 (2-4),Granier_2_Avg(12),Pine,14,_24CM_,Random,_15:25DIAM_,15.5,NodeTWO_44Pine14_24CM_Random_15:25DIAM_,NodeTWO_44_Status,24CM
+NodeTWO_,45,15 (2-4),Granier_2_Avg(13),Spruce,15,_24CM_,Random,_15:25DIAM_,20.8,NodeTWO_45Spruce15_24CM_Random_15:25DIAM_,NodeTWO_45_Status,24CM
+NodeTWO_,46,8S,Granier_2_Avg(14),Spruce,8,_02CM_,South,_15:25DIAM_,21.5,NodeTWO_46Spruce8_02CM_South_15:25DIAM_,NodeTWO_46_Status,02CM
+NodeTWO_,47,8E,Granier_2_Avg(15),Spruce,8,_02CM_,East,_15:25DIAM_,21.5,NodeTWO_47Spruce8_02CM_East_15:25DIAM_,NodeTWO_47_Status,02CM
+NodeTWO_,48,8W,Granier_2_Avg(16),Spruce,8,_02CM_,West,_15:25DIAM_,21.5,NodeTWO_48Spruce8_02CM_West_15:25DIAM_,NodeTWO_48_Status,02CM
+NodeTWO_,49,8N,Granier_2_Avg(17),Spruce,8,_02CM_,North,_15:25DIAM_,21.5,NodeTWO_49Spruce8_02CM_North_15:25DIAM_,NodeTWO_49_Status,02CM
+NodeTWO_,50,6 (2-4),Granier_2_Avg(18),Spruce,6,_24CM_,Random,_15:25DIAM_,15.2,NodeTWO_50Spruce6_24CM_Random_15:25DIAM_,NodeTWO_50_Status,24CM
+NodeTHREE_,1,20 (2-4) ,Granier_Avg(1),Pine,20,_24CM_,Random,_25:30DIAM_,40.4,NodeTHREE_1Pine20_24CM_Random_25:30DIAM_,NodeTHREE_1_Status,24CM
+NodeTHREE_,2,9W,Granier_Avg(2),Spruce,9,_02CM_,West,_15:25DIAM_,18.05,NodeTHREE_2Spruce9_02CM_West_15:25DIAM_,NodeTHREE_2_Status,02CM
+NodeTHREE_,3,9S,Granier_Avg(3),Spruce,9,_02CM_,South,_15:25DIAM_,18.05,NodeTHREE_3Spruce9_02CM_South_15:25DIAM_,NodeTHREE_3_Status,02CM
+NodeTHREE_,4,13 (2-4),Granier_Avg(4),Spruce,13,_24CM_,Random,_25:30DIAM_,29.6,NodeTHREE_4Spruce13_24CM_Random_25:30DIAM_,NodeTHREE_4_Status,24CM
+NodeTHREE_,5,2 (4-6),Granier_Avg(5),Pine,2,_46CM_,Random,_25:30DIAM_,25.3,NodeTHREE_5Pine2_46CM_Random_25:30DIAM_,NodeTHREE_5_Status,46CM
+NodeTHREE_,6,13 (0-2),Granier_Avg(6),Spruce,13,_02CM_,Random,_25:30DIAM_,29.6,NodeTHREE_6Spruce13_02CM_Random_25:30DIAM_,NodeTHREE_6_Status,02CM
+NodeTHREE_,7,19 (0-2),Granier_Avg(7),Pine,19,_02CM_,Random,_25:30DIAM_,28.05,NodeTHREE_7Pine19_02CM_Random_25:30DIAM_,NodeTHREE_7_Status,02CM
+NodeTHREE_,8,2 (6-8),Granier_Avg(8),Pine,2,_68CM_,Random,_25:30DIAM_,25.3,NodeTHREE_8Pine2_68CM_Random_25:30DIAM_,NodeTHREE_8_Status,68CM
+NodeTHREE_,9,2 (2-4),Granier_Avg(9),Pine,2,_24CM_,Random,_25:30DIAM_,25.3,NodeTHREE_9Pine2_24CM_Random_25:30DIAM_,NodeTHREE_9_Status,24CM
+NodeTHREE_,10,10 (0-2),Granier_Avg(10),Pine,10,_02CM_,Random,_15:25DIAM_,23.4,NodeTHREE_10Pine10_02CM_Random_15:25DIAM_,NodeTHREE_10_Status,02CM
+NodeTHREE_,11,7W,Granier_Avg(11),Pine,7,_02CM_,West,_15:25DIAM_,20.75,NodeTHREE_11Pine7_02CM_West_15:25DIAM_,NodeTHREE_11_Status,02CM
+NodeTHREE_,12,9N,Granier_Avg(12),Spruce,9,_02CM_,North,_15:25DIAM_,18.05,NodeTHREE_12Spruce9_02CM_North_15:25DIAM_,NodeTHREE_12_Status,02CM
+NodeTHREE_,13,8 (0-2),Granier_Avg(13),Spruce,8,_02CM_,Random,_25:30DIAM_,28.5,NodeTHREE_13Spruce8_02CM_Random_25:30DIAM_,NodeTHREE_13_Status,02CM
+NodeTHREE_,14,10 (2-4),Granier_Avg(14),Pine,10,_24CM_,Random,_15:25DIAM_,23.4,NodeTHREE_14Pine10_24CM_Random_15:25DIAM_,NodeTHREE_14_Status,24CM
+NodeTHREE_,15,7N,Granier_Avg(15),Pine,7,_02CM_,Random,_15:25DIAM_,20.75,NodeTHREE_15Pine7_02CM_Random_15:25DIAM_,NodeTHREE_15_Status,02CM
+NodeTHREE_,16,11 (0-2),Granier_Avg(16),Spruce,11,_02CM_,Random,_15:25DIAM_,19.35,NodeTHREE_16Spruce11_02CM_Random_15:25DIAM_,NodeTHREE_16_Status,02CM
+NodeTHREE_,17,2 (0-2),Granier_Avg(17),Pine,2,_02CM_,Random,_25:30DIAM_,25.3,NodeTHREE_17Pine2_02CM_Random_25:30DIAM_,NodeTHREE_17_Status,02CM
+NodeTHREE_,18,19 (2-4),Granier_Avg(18),Pine,19,_24CM_,Random,_25:30DIAM_,28.05,NodeTHREE_18Pine19_24CM_Random_25:30DIAM_,NodeTHREE_18_Status,24CM
+NodeTHREE_,19,8 (2-4),Granier_Avg(19),Spruce,8,_24CM_,Random,_25:30DIAM_,28.5,NodeTHREE_19Spruce8_24CM_Random_25:30DIAM_,NodeTHREE_19_Status,24CM
+NodeTHREE_,20,7E,Granier_Avg(20),Pine,7,_02CM_,East,_15:25DIAM_,20.75,NodeTHREE_20Pine7_02CM_East_15:25DIAM_,NodeTHREE_20_Status,02CM
+NodeTHREE_,21,7S,Granier_Avg(21),Pine,7,_02CM_,South,_15:25DIAM_,20.75,NodeTHREE_21Pine7_02CM_South_15:25DIAM_,NodeTHREE_21_Status,02CM
+NodeTHREE_,22,11 (2-4),Granier_Avg(22),Spruce,11,_24CM_,Random,_15:25DIAM_,19.35,NodeTHREE_22Spruce11_24CM_Random_15:25DIAM_,NodeTHREE_22_Status,24CM
+NodeTHREE_,23,8 (6-8),Granier_Avg(23),Spruce,8,_68CM_,Random,_25:30DIAM_,28.5,NodeTHREE_23Spruce8_68CM_Random_25:30DIAM_,NodeTHREE_23_Status,68CM
+NodeTHREE_,24,8 (4-6),Granier_Avg(24),Spruce,8,_46CM_,Random,_25:30DIAM_,28.5,NodeTHREE_24Spruce8_46CM_Random_25:30DIAM_,NodeTHREE_24_Status,46CM
+NodeTHREE_,25,4 (0-2),Granier_Avg(25),Pine,4,_02CM_,Random,_15:25DIAM_,18.8,NodeTHREE_25Pine4_02CM_Random_15:25DIAM_,NodeTHREE_25_Status,02CM
+NodeTHREE_,26,3 (0-2),Granier_Avg(26),Pine,3,_02CM_,Random,_25:30DIAM_,27.5,NodeTHREE_26Pine3_02CM_Random_25:30DIAM_,NodeTHREE_26_Status,02CM
+NodeTHREE_,27,6 (4-6),Granier_Avg(27),Pine,6,_46CM_,Random,_25:30DIAM_,35.4,NodeTHREE_27Pine6_46CM_Random_25:30DIAM_,NodeTHREE_27_Status,46CM
+NodeTHREE_,28,6 (2-4),Granier_Avg(28),Pine,6,_24CM_,Random,_25:30DIAM_,35.4,NodeTHREE_28Pine6_24CM_Random_25:30DIAM_,NodeTHREE_28_Status,24CM
+NodeTHREE_,29,6 (0-2),Granier_Avg(29),Pine,6,_02CM_,Random,_25:30DIAM_,35.4,NodeTHREE_29Pine6_02CM_Random_25:30DIAM_,NodeTHREE_29_Status,02CM
+NodeTHREE_,30,6 (6-8),Granier_Avg(30),Pine,6,_68CM_,Random,_25:30DIAM_,35.4,NodeTHREE_30Pine6_68CM_Random_25:30DIAM_,NodeTHREE_30_Status,68CM
+NodeTHREE_,31,18 (4-6),Granier_Avg(31),Spruce,18,_46CM_,Random,_25:30DIAM_,25.05,NodeTHREE_31Spruce18_46CM_Random_25:30DIAM_,NodeTHREE_31_Status,46CM
+NodeTHREE_,32,12 (0-2),Granier_Avg(32),Spruce,12,_02CM_,Random,_25:30DIAM_,31.3,NodeTHREE_32Spruce12_02CM_Random_25:30DIAM_,NodeTHREE_32_Status,02CM
+NodeTHREE_,33,12 (2-4),Granier_2_Avg(1),Spruce,12,_24CM_,Random,_25:30DIAM_,31.3,NodeTHREE_33Spruce12_24CM_Random_25:30DIAM_,NodeTHREE_33_Status,24CM
+NodeTHREE_,34,12 (4-6),Granier_2_Avg(2),Spruce,12,_46CM_,Random,_25:30DIAM_,31.3,NodeTHREE_34Spruce12_46CM_Random_25:30DIAM_,NodeTHREE_34_Status,46CM
+NodeTHREE_,35,14 (0-2),Granier_2_Avg(3),Spruce,14,_02CM_,Random,_7:15DIAM_,12.6,NodeTHREE_35Spruce14_02CM_Random_7:15DIAM_,NodeTHREE_35_Status,02CM
+NodeTHREE_,36,15 (0-2),Granier_2_Avg(4),Spruce,15,_02CM_,Random,_7:15DIAM_,14.85,NodeTHREE_36Spruce15_02CM_Random_7:15DIAM_,NodeTHREE_36_Status,02CM
+NodeTHREE_,37,17 (0-2),Granier_2_Avg(5),Spruce,17,_02CM_,Random,_15:25DIAM_,22,NodeTHREE_37Spruce17_02CM_Random_15:25DIAM_,NodeTHREE_37_Status,02CM
+NodeTHREE_,38,17 (2-4),Granier_2_Avg(6),Spruce,17,_24CM_,Random,_15:25DIAM_,22,NodeTHREE_38Spruce17_24CM_Random_15:25DIAM_,NodeTHREE_38_Status,24CM
+NodeTHREE_,39,20 (6-8),Granier_2_Avg(7),Pine,20,_68CM_,Random,_25:30DIAM_,40.4,NodeTHREE_39Pine20_68CM_Random_25:30DIAM_,NodeTHREE_39_Status,68CM
+NodeTHREE_,40,9E,Granier_2_Avg(8),Spruce,9,_02CM_,East,_15:25DIAM_,18.05,NodeTHREE_40Spruce9_02CM_East_15:25DIAM_,NodeTHREE_40_Status,02CM
+NodeTHREE_,41,1 (0-2),Granier_2_Avg(9),Pine,1,_02CM_,Random,_15:25DIAM_,23.7,NodeTHREE_41Pine1_02CM_Random_15:25DIAM_,NodeTHREE_41_Status,02CM
+NodeTHREE_,42,3 (2-4),Granier_2_Avg(10),Pine,3,_24CM_,Random,_25:30DIAM_,27.5,NodeTHREE_42Pine3_24CM_Random_25:30DIAM_,NodeTHREE_42_Status,24CM
+NodeTHREE_,43,5 (0-2),Granier_2_Avg(11),Pine,5,_02CM_,Random,_25:30DIAM_,29.6,NodeTHREE_43Pine5_02CM_Random_25:30DIAM_,NodeTHREE_43_Status,02CM
+NodeTHREE_,44,20 (0-2),Granier_2_Avg(12),Pine,20,_02CM_,Random,_25:30DIAM_,40.4,NodeTHREE_44Pine20_02CM_Random_25:30DIAM_,NodeTHREE_44_Status,02CM
+NodeTHREE_,45,18 (2-4),Granier_2_Avg(13),Spruce,18,_24CM_,Random,_25:30DIAM_,25.05,NodeTHREE_45Spruce18_24CM_Random_25:30DIAM_,NodeTHREE_45_Status,24CM
+NodeTHREE_,46,20 (4-6),Granier_2_Avg(14),Pine,20,_46CM_,Random,_25:30DIAM_,40.4,NodeTHREE_46Pine20_46CM_Random_25:30DIAM_,NodeTHREE_46_Status,46CM
+NodeTHREE_,47,18 (6-8),Granier_2_Avg(15),Spruce,18,_68CM_,Random,_25:30DIAM_,25.05,NodeTHREE_47Spruce18_68CM_Random_25:30DIAM_,NodeTHREE_47_Status,68CM
+NodeTHREE_,48,18 (0-2),Granier_2_Avg(16),Spruce,18,_02CM_,Random,_25:30DIAM_,25.05,NodeTHREE_48Spruce18_02CM_Random_25:30DIAM_,NodeTHREE_48_Status,02CM
+NodeTHREE_,49,16 (0-2),Granier_2_Avg(17),Spruce,16,_02CM_,Random,_7:15DIAM_,8.95,NodeTHREE_49Spruce16_02CM_Random_7:15DIAM_,NodeTHREE_49_Status,02CM
+NodeTHREE_,50,12 (6-8),Granier_2_Avg(18),Spruce,12,_68CM_,Random,_25:30DIAM_,31.3,NodeTHREE_50Spruce12_68CM_Random_25:30DIAM_,NodeTHREE_50_Status,68CM
