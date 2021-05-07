@@ -5,6 +5,14 @@
 00#             the manuscript "How tree species, tree size and topographical location influenced      ##
 00#             tree transpiration in northern boreal forests during the historic 2018 drought         ##                                                                               
 00#                                                                                                    ##
+00#             NOTE: This data and associated scripts are an extract from a larger script and         ##
+00#                   database, and consequently, the files might contains additional data that        ##
+00#                   was not included in the manuscript. Additionally, some data are already fully    ##
+00#                   processed, and the R scripts provided are for reference purposes only            ##
+00#                                                                                                    ##
+00#             Manuscript DOI: https://doi.org/10.1111/gcb.15601                                      ##
+00#                                                                                                    ##
+00#                                                                                                    ##
 00#            SAP FLOW DETAILS:                                                                       ##
 00#                 - Method: Heat dissipation. Granier 1985                                           ##
 00#                 - Corrections: Wounding drift & Radial profiles                                    ##
@@ -28,12 +36,24 @@
 
 # LIST OF FILES REQUIRED   ----------------------------------------------------------------
 
+"stk.sf.met.csv"
+"daily.data.csv"
+"all.nodes.sapflow.csv"
+"wound.drift.fd.csv"
+"all.nodes.raw.dat"
+"longterm_drought.csv"
+"all.eco.met.dat"
+"allometric_data.dat"
+"tree.diam.info.csv"
+"par.estimates.csv"
+"histo_data.csv"
+
 # END OF SECTION ----
 
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 #
-#  LIBRARIES - PACKAGES - DIRECTORIES
+#  LIBRARIES - PACKAGES
 #
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
@@ -54,7 +74,7 @@ library(lme4)
 
 # Get working directory and files
 getwd() 
-setwd("/Users/sapflow_data") 
+setwd("Data/") 
 
 
 # END OF SECTION ----
@@ -67,7 +87,7 @@ setwd("/Users/sapflow_data")
 
 # OPEN - METEOROLOGICAL AND ECOSYSTEMS DATA  ----------------------------------------------------------------
 
-all.eco.met = read.table(file="/Users/sapflow_data", header=T, sep = ",")
+all.eco.met = read.table(file="Data/all.eco.met", header=T, sep = ",")
 
 #Add date to database
 
@@ -395,10 +415,145 @@ all.eco.met["Overcast.range"] <- temp_week$Overcast.range
 rm(temp_agg, temp_agg_week, temp_week, x, y, surface, temp, lo, tmp_col)
 
 
+# ESTIMATE: Daily means ----------------------------------------------------------------
+
+names(all.eco.met)
+
+
+daily.data <- aggregate(cbind(Date)~DOY_cont, 
+                        data=all.eco.met, FUN = min, na.action = na.pass)
+
+daily.data$Date <- date(as.POSIXct(daily.data$Date, origin="1970/01/1", tz="UTC"))
+
+all.eco.met["Date_DOY"] <- date(all.eco.met$Date)
+
+daily.means <- aggregate(cbind(Ta_1_1_1, RH_1_1_1, PPFD_IN_1_2_1, VPD_kPa, 
+                               VWC_5, VWC_10, VWC_15, VWC_30, VWC_50, VWC0.15, S0.15)~Date_DOY, 
+                         data=all.eco.met, FUN = mean, na.action = na.pass)
+
+#daily.means["Date"] <- date(as.POSIXct(daily.means$Date, origin="1970/01/1", tz="UTC"))
+
+daily.data$Date
+daily.means$Date
+
+names(daily.data)
+names(daily.means)
+
+# Change name of variable for "merge"
+colnames(daily.means)[1]<-c("Date")
+
+#daily.data <- merge(daily.data, daily.means, by="Date", all.x=T, all.y=F)
+
+rm(daily.means)
+
+NROW(daily.data)
+NROW(daily.means)
+
+summary_Fd.Q["Date_DOY"] <- date(summary_Fd.Q$Date)
+
+daily.sums <- aggregate(cbind(ETo_mm, All_Q, PPFD_IN_1_2_1.sm = PPFD_IN_1_2_1, VPD_kPa.sm =VPD_kPa, P_1_1_1,
+                              Pines_Q, Pine_15DIAM_Q,Pine_25DIAM_Q,Pine_.25DIAM_Q,
+                              Spruce_Q, Spruce_15DIAM_Q, Spruce_25DIAM_Q, Spruce_.25DIAM_Q, 
+                              Birch_Q, Birch_15DIAM_Q, Birch_25DIAM_Q)~Date_DOY, data=summary_Fd.Q, FUN = sum, na.action = na.omit)
+
+
+# Change name of variable for "merge"
+colnames(daily.sums)[1]<-c("Date")
+
+#daily.sums["Date"] <- date(as.POSIXct((daily.sums$Date/48)-42300, origin="1970/01/1", tz="UTC"))
+
+# Add daylength-corrected VPD
+names(summary_Fd.Q)
+summary_Fd.Q_daylength <-  subset(summary_Fd.Q, summary_Fd.Q$PPFD_IN_1_2_1>20, select=c("Date","PPFD_IN_1_2_1", "VPD_kPa", "DOY_cont",  "Month", "Year" ),na.action=na.omit)
+
+summary_Fd.Q_daylength["Date"] <- date(as.POSIXct(summary_Fd.Q_daylength$Date, origin="1970/01/1", tz="UTC"))
+
+temp <- aggregate(cbind(DOY_cont, PPFD_IN_1_2_1, VPD_kPa)~Date, data=summary_Fd.Q_daylength, FUN=function(x) c(mean = mean(x), lgt = length(x)), na.action=na.omit)
+
+# Estimate daylength-corrected VPD: Dz
+temp["Dz"] <- temp$VPD_kPa[,1]*(temp$VPD_kPa[,2]/48)
+
+# Estimate daylength-corrected PAR: PARz
+
+temp["PARz"] <- temp$PPFD_IN_1_2_1[,1]*(temp$PPFD_IN_1_2_1[,2]/48)
+
+as.numeric(temp$Date)
+
+as.numeric(daily.data$Date)
+
+as.numeric(daily.means$Date)
+#The part below is no longer needed
+
+#temp["Date"] <- date(as.POSIXct(temp[["Date"]][,1], origin="1970/01/1", tz="UTC"))
+
+#temp["DOY_cont"]  <- temp[["DOY_cont"]][,1]
+
+#daily.data["DOY"] <- lubridate::yday(daily.data$Date)
+#daily.data["Year"] <- lubridate::year(daily.data$Date)
+
+temp.date <- date(seq(as.POSIXct("2016/01/01", tz="UTC"),as.POSIXct("2019/12/31", tz="UTC"), by = "day"))
+
+daily.data <- setNames(as.data.frame(matrix(ncol = 1, nrow = NROW(temp.date))),c("Date"))
+
+daily.data["Date"] <- temp.date
+rm(temp.date)
+
+daily.data <- merge(daily.data, daily.sums, by="Date", all.x=T, all.y=F) 
+
+#colnames(daily.data)[3]<-c("DOY_cont")
+
+#daily.data <- merge(daily.data, daily.means, by="Date", all.x=T, all.y=F) 
+
+
+daily.data["Dz"] <- merge(daily.data, temp, by="Date", all.x=T, all.y=F)$Dz
+
+daily.data["PARz"] <- merge(daily.data, temp, by="Date", all.x=T, all.y=F)$PARz
+
+rm(daily.sums, daily.means)
+
+#I think the stuff below is not needed
+names(daily.data)
+
+# Plot test to see if things work 
+
+plot(daily.data$Dz, daily.data$Pines_Q)
+
+rm(temp, temp.2, temp.3, temp.4)
+
+plot(daily.data$Date.x,daily.data$S0.15)
 
 
 
+# ADD: Long-term drought data to daily.data  ----------------------------------------------------------------
 
+names(daily.data)
+daily.data["Year"] <- lubridate::year(daily.data$Date)
+daily.data["Month"] <- lubridate::month(daily.data$Date)
+daily.data["DOY"] <- lubridate::yday(daily.data$Date)
+
+daily.data["Week"] <- ifelse(daily.data$Year==2016,lubridate::week(daily.data$Date),
+                             ifelse((daily.data$Year==2017),lubridate::week(daily.data$Date)+53,
+                                    ifelse((daily.data$Year==2018),lubridate::week(daily.data$Date)+106,
+                                           lubridate::week(daily.data$Date)+159)))
+
+
+longterm_drought$Date
+temp.drought <- subset(longterm_drought, longterm_drought$Year>2015)
+
+temp.drought["Week"] <- ifelse(temp.drought$Year==2016,lubridate::week(temp.drought$Date),
+                               ifelse((temp.drought$Year==2017),lubridate::week(temp.drought$Date)+53,
+                                      ifelse((temp.drought$Year==2018),lubridate::week(temp.drought$Date)+106,
+                                             lubridate::week(temp.drought$Date)+159)))
+
+
+as.Date(temp.drought$Date)
+daily.data["spei"] <- merge(daily.data, temp.drought, by="Week", all.x= T, all.y=T)["spei"]
+
+rm(temp.drought)
+
+plot(daily.data$Date, daily.data$spei)
+
+write.table(daily.data, "Data/daily.data.csv", sep=",", row.names=F)
 # END OF SECTION ----
 
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -410,7 +565,7 @@ rm(temp_agg, temp_agg_week, temp_week, x, y, surface, temp, lo, tmp_col)
 # OPEN - LONG_TERM DATA  ----------------------------------------------------------------
 
 # Open files
-histo_data = read.table(file="/Users/sapflow_data",header=T,sep=",")
+histo_data = read.table(file="Data/histo_data.csv",header=T,sep=",")
 
 names(histo_data)
 
@@ -593,12 +748,9 @@ rm(histogram)
 
 # SAVE - HISTORIC DATA ----------
 
-#write.table(histo_data, "histo_data.csv", sep=",", row.names=FALSE)
 
 
 # OPEN - HISTORIC DATA ----------
-
-#histo_data <- read.table("histo_data.csv", sep=",", row.names=FALSE)
 
 
 # PREDICT - LONG_TERM ETo  ----------------------------------------------------------------
@@ -771,27 +923,29 @@ longterm_drought.month$spei <- ifelse(longterm_drought.month$Month==12, 0, longt
 
 # SAVE - LONG_TERM DROUGHT INDEX  ----------------------------------------------------------------
 names(longterm_drought)
-write.table(longterm_drought, "longterm_drought.csv", sep=",", row.names=FALSE)
+
+write.table(longterm_drought, "Data/longterm_drought.csv", sep=",", row.names=FALSE)
+
 
 # OPEN - LONG_TERM DROUGHT INDEX  ----------------------------------------------------------------
 
-longterm_drought <- read.table(file="/Users/sapflow_data/longterm_drought.csv",header=T,sep=",")
+longterm_drought <- read.table(file="Data/longterm_drought.csv",header=T,sep=",")
 names(longterm_drought)
 
 # END OF SECTION ----
 
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 #
-#  PARAMETERS [previously fit]
+#  PARAMETERS 
 #
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
+# This includes a database with parameters fitted for a various models/equations
+# They are compiled here in a single file, to simplify the data analysis
 # OPEN - PARAMETER DATABASE ----------------------------------------------------------------
- 
-#write.table(par.estimates, "par.estimates_mar_27_2020.csv", sep=",", row.names = FALSE)
 
+par.estimates <- read.table(file="Data/par.estimates.csv",header=T,sep=",")
 
-par.estimates <- read.table(file="/Users/sapflow_data/par.estimates.csv",header=T,sep=",")
 # END OF SECTION ----
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
@@ -805,7 +959,7 @@ par.estimates <- read.table(file="/Users/sapflow_data/par.estimates.csv",header=
 
 # Load databases
 
-dt.allomet <- read.table(file="/Users/data/allometric_data.dat",header=T,sep=",", na.strings = "NAN" )
+dt.allomet <- read.table(file="Data/allometric_data.dat",header=T,sep=",", na.strings = "NAN" )
 
 dt.allomet <- subset(dt.allomet, dt.allomet$Outlier=="No")
 
@@ -881,7 +1035,7 @@ rm(A, B, Diam)
 
 # Import diameter for each tree
 
-tree.info = read.table(file="/Users/tree.diam.info.csv",header=T,sep=",")
+tree.info = read.table(file="Data/tree.diam.info.csv",header=T,sep=",")
 
 # Dataframe with unique name IDS (needed later on)
 temp.names <- as.data.frame(paste(paste("Fd", tree.info$Unique.name.ID[grep("Pine.*_02CM_.*|Spruce.*_02CM_.*", tree.info$Unique.name.ID)], sep = "_"), "radial", sep="."))
@@ -931,16 +1085,6 @@ rm(as_pine, as_spruce)
 plot(tree.dat.temp$DBH, tree.dat.temp$Ds, col=ifelse(tree.dat.temp$Species=="Pine", "Red", "blue"))
 
 plot(tree.dat.temp$DBH, tree.dat.temp$As, col=ifelse(tree.dat.temp$Species=="Pine", "Red", "blue"))
-
-# END OF SECTION ----
-
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-#
-#  SAP FLOW DATA
-#
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
-
 
 # END OF SECTION ----
 
@@ -1199,6 +1343,9 @@ Tmaxset <- paste("Tmax", colnames(all_nodes_raw.DF[min_mV:max_mV]), sep = "_")
 
 
 
+# END OF SECTION ----
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 # ESTIMATE - SLOPE OF RAW DATA [SLOPE PAUSED - FEB 25]  ----------------------------------------------------------------
 
 # NOTE - Script extremely slow, run only if absolutelly necessary
@@ -1305,6 +1452,10 @@ plot(tempdataframe$slope_NodeONE_1Spruce19_02CM_West_15.25DIAM_)
 plot(all_nodes_raw.slope.DF$NodeTHREE_40Spruce9_02CM_East_15.25DIAM_)
 
 
+
+# END OF SECTION ----
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 # TMAX - EXTRACT RELEVANT VALUES  ----------------------------------------------------------------
 # Since no slope, I changed the name of the DF from all_nodes_raw.slope.DF, to all_nodes_raw.DF_aligned
@@ -1794,10 +1945,10 @@ names(all.nodes.raw.Fd)
 NROW(all.nodes.raw.Fd)
 # SAVE - FD DATA BASE  ----------------------------------------------------------------
 
-#colnames(all_nodes_raw.DF_Fd)
+#colnames(all.nodes.raw.Fd)
 
 #Export database for further cleaning
-write.table(all.nodes.raw.Fd, "all.nodes.raw.Fd_Mar_01_2021.fun.max.csv", sep=",",row.names = FALSE)
+write.table(all.nodes.raw.Fd, "all.nodes.raw.Fd.csv", sep=",",row.names = FALSE)
 # write.table(all.nodes.raw.Fd, "all.nodes.raw.Fd_Feb_26_2021.csv", sep=",",row.names = FALSE)
 
 # OPEN - RAW FD DATABASE ----------------------------------------------------------------
@@ -1821,16 +1972,16 @@ all.nodes.raw.Fd["DOY"] <- ifelse(all.nodes.raw.Fd$Year==2016,lubridate::yday(al
 
 
 # END OF SECTION ----
-
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 #
-#  DRIFT CORRECTION
+#  WOUNDING DRIFT CORRECTION
 #
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
-# CORRECT - WOUNDING DRIFFT [ALL SENSORS - PINE & SPRUCE]  ----------------------------------------------------------------
+# Correction of reductions in sap flux density, resulting from wounding
+# CORRECT - WOUNDING DRIFFT  ----------------------------------------------------------------
 
 #temp.names <- paste(paste("Fd", tree.info$Unique.name.ID[grep("Pine.*_02CM_.*|Spruce.*_02CM_.*", tree.info$Unique.name.ID)], sep = "_"), "radial", sep=".")
 
@@ -1896,7 +2047,6 @@ head(wound.drift.fd, 20)
 wound.drift.fd["Date"] <- seq(as.POSIXct("2016/06/17 00:00:00", tz="UTC"), as.POSIXct("2020/12/30 23:30:00", tz="UTC"), by = "30 min")
 
 
-
 #plot(wound.drift.fd[,1], wound.drift.fd[,2])
 
 rm(i, fd, tree.id, species, adj.slope, slope.pine, slope.spruce, slope.birch)
@@ -1909,742 +2059,27 @@ rm(slope.set)
 
 # SAVE - WOUND.DRIFT DATABASE  ----------------------------------------------------------------
 
-names(all.nodes.raw.Fd)
-
-names(wound.drift.fd)
-
-plot(all.nodes.raw.Fd$Date, all.nodes.raw.Fd[,3], col="red")
-
-lines(wound.drift.fd$Date, wound.drift.fd[,3], col="blue")
-
 #rm(all.nodes.raw.Fd.rad)
 all.nodes.raw.Fd.rad <-  merge(all.nodes.raw.Fd, wound.drift.fd, by="Date", all.x=T, all.y=T, sort=T )
 
-
-write.table(wound.drift.fd, "wound.drift.fd_march_06_2021.csv", sep=",", row.names = FALSE)
-# END OF SECTION ----
-
-
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
-# PART FOR RADIAL PROFILES
-
-# RADIAL RATIOS [not in use - Jul22] - average by hour ----------------------------------------------------------------
-
-
-# Temporary test: average ratios with grep (might make averaging easier)
-# Perhaps create a new  dataframe for the ratios?
-
-rad.profile.ratios <- setNames(as.data.frame(matrix(ncol = 21, nrow = NROW(all.nodes.raw.Fd))),
-                               c("Date", "pine.sma.1", "pine.sma.3", 
-                                 "pine.med.1", "pine.med.3", "pine.med.5","pine.med.7",
-                                 "pine.lar.1", "pine.lar.3", "pine.lar.5","pine.lar.7",
-                                 "spruce.sma.1", "spruce.sma.3", 
-                                 "spruce.med.1", "spruce.med.3", "spruce.med.5","spruce.med.7",
-                                 "spruce.lar.1", "spruce.lar.3", "spruce.lar.5", "spruce.lar.7"))
-
-
-rad.profile.ratios["Date"] <- seq(as.POSIXct("2016/06/17", tz="UTC"), as.POSIXct("2019/12/31 23:30:00", tz="UTC"), by = "30 mins")
-
-
-# Small pines
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_02CM_.*_7.15DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_24CM_.*_7.15DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-rad.profile.ratios["pine.sma.1"] <- depth1cm/depth1cm
-
-rad.profile.ratios["pine.sma.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rm(depth1cm, depth3cm)
-
-# Medium pines
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_02CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_24CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth5cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_46CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth7cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_68CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-rad.profile.ratios["pine.med.1"] <- depth1cm/depth1cm
-
-rad.profile.ratios["pine.med.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rad.profile.ratios["pine.med.5"] <- ifelse((depth5cm/depth1cm)>1, 1, depth5cm/depth1cm)
-
-rad.profile.ratios["pine.med.7"] <- ifelse((depth7cm/depth1cm)>1, 1, depth7cm/depth1cm)
-
-rm(depth1cm, depth3cm, depth5cm, depth7cm)
-
-# Large pines
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_02CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_24CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth5cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_46CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth7cm <- rowMeans(all.nodes.raw.Fd[grep("Pine.*_68CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-rad.profile.ratios["pine.lar.1"] <- depth1cm/depth1cm
-
-rad.profile.ratios["pine.lar.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rad.profile.ratios["pine.lar.5"] <- ifelse((depth5cm/depth1cm)>1, 1, depth5cm/depth1cm)
-
-rad.profile.ratios["pine.lar.7"] <- ifelse((depth7cm/depth1cm)>1, 1, depth7cm/depth1cm)
-
-rm(depth1cm, depth3cm, depth5cm, depth7cm)
-
-# Small spruce
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_02CM_.*_7.15DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_24CM_.*_7.15DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-
-rad.profile.ratios["spruce.sma.1"] <- depth1cm/depth1cm
-rad.profile.ratios["spruce.sma.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rm(depth1cm, depth3cm)
-
-# Medium spruce
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_02CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_24CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth5cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_46CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth7cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_68CM_.*_15.25DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-rad.profile.ratios["spruce.med.1"] <- depth1cm/depth1cm
-
-rad.profile.ratios["spruce.med.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rad.profile.ratios["spruce.med.5"] <- ifelse((depth5cm/depth1cm)>1, 1, depth5cm/depth1cm)
-
-rad.profile.ratios["spruce.med.7"] <- ifelse((depth7cm/depth1cm)>1, 1, depth7cm/depth1cm)
-
-rm(depth1cm, depth3cm, depth5cm, depth7cm)
-
-# Large pines
-
-
-depth1cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_02CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth3cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_24CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth5cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_46CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-depth7cm <- rowMeans(all.nodes.raw.Fd[grep("Spruce.*_68CM_.*_25.30DIAM_", names(all.nodes.raw.Fd))], na.rm=T)
-
-rad.profile.ratios["spruce.lar.1"] <- depth1cm/depth1cm
-
-rad.profile.ratios["spruce.lar.3"] <- ifelse((depth3cm/depth1cm)>1, 1, depth3cm/depth1cm)
-
-rad.profile.ratios["spruce.lar.5"] <- ifelse((depth5cm/depth1cm)>1, 1, depth5cm/depth1cm)
-
-rad.profile.ratios["spruce.lar.7"] <- ifelse((depth7cm/depth1cm)>1, 1, depth7cm/depth1cm)
-
-
-
-
-rad.profile.ratios["Hour"] <- lubridate::hour(rad.profile.ratios$Date)
-
-rad.profile.ratios["Month"] <- lubridate::month(rad.profile.ratios$Date)
-
-
-rad.profile.ratios["Year"] <- lubridate::year(rad.profile.ratios$Date)
-
-
-
-rad.profile.ratios["spruce.lar.mean"]  <- rowMeans(rad.profile.ratios[grep("spruce.lar.1|spruce.lar.3|spruce.lar.5|spruce.lar.7", names(rad.profile.ratios))], na.rm=T)
-
-rad.profile.ratios["spruce.med.mean"]  <- rowMeans(rad.profile.ratios[grep("spruce.med.1|spruce.med.3|spruce.med.5|spruce.med.7", names(rad.profile.ratios))], na.rm=T)
-
-rad.profile.ratios["spruce.sma.mean"]  <- rowMeans(rad.profile.ratios[grep("spruce.sma.1|spruce.sma.3", names(rad.profile.ratios))], na.rm=T)
-
-rad.profile.ratios["pine.lar.mean"]  <- rowMeans(rad.profile.ratios[grep("pine.lar.1|pine.lar.3|pine.lar.5|pine.lar.7", names(rad.profile.ratios))], na.rm=T)
-
-rad.profile.ratios["pine.med.mean"]  <- rowMeans(rad.profile.ratios[grep("pine.med.1|pine.med.3|pine.med.5|pine.med.7", names(rad.profile.ratios))], na.rm=T)
-
-rad.profile.ratios["pine.sma.mean"]  <- rowMeans(rad.profile.ratios[grep("pine.sma.1|pine.sma.3", names(rad.profile.ratios))], na.rm=T)
-
-
-# RADIAL RATIOS [not in use - Jul22] - PLOT TO SEE MEAN RATIOS PER SPECIES/SIZE  ----------------------------------------------------------------
-
-par(mfrow=c(1,1))
-
-rad.profile.ratios["DOEY"] <- lubridate::yday(rad.profile.ratios$Date)
-
-temp.rat <- aggregate(cbind(pine.med.mean)~Year+DOEY, data=rad.profile.ratios, FUN=mean)[2:3]
-
-plot(temp.rat$pine.med.mean)
-
-par(mfrow=c(1,4))
-
-
-row(1)
-temp <- aggregate(cbind(spruce.lar.mean, spruce.med.mean, spruce.sma.mean,
-                        pine.lar.mean, pine.med.mean, pine.sma.mean)~Month+Hour, data=subset(rad.profile.ratios, rad.profile.ratios$Month==9&rad.profile.ratios$Year==2016), FUN=mean, na.rm=T)
-
-plot(temp[,2], temp[,3], ylim=c(0,1), col="blue")
-lines(temp[,2], temp[,4],col="red")
-lines(temp[,2], temp[,5],col="pink")
-lines(temp[,2], temp[,6],col="green")
-lines(temp[,2], temp[,7],col="green")
-
-
-row(2)
-
-temp <- aggregate(cbind(spruce.lar.mean, spruce.med.mean, spruce.sma.mean,
-                        pine.lar.mean, pine.med.mean, pine.sma.mean)~Month+Hour, data=subset(rad.profile.ratios, rad.profile.ratios$Month==9&rad.profile.ratios$Year==2017), FUN=mean, na.rm=T)
-
-plot(temp[,2], temp[,3], ylim=c(0,1), col="blue")
-lines(temp[,2], temp[,4],col="red")
-lines(temp[,2], temp[,5],col="pink")
-lines(temp[,2], temp[,6],col="green")
-lines(temp[,2], temp[,7],col="green")
-
-
-
-row(3)
-
-temp <- aggregate(cbind(spruce.lar.mean, spruce.med.mean, spruce.sma.mean,
-                        pine.lar.mean, pine.med.mean, pine.sma.mean)~Month+Hour, data=subset(rad.profile.ratios, rad.profile.ratios$Month==9&rad.profile.ratios$Year==2018), FUN=mean, na.rm=T)
-
-plot(temp[,2], temp[,3], ylim=c(0,1), col="blue")
-lines(temp[,2], temp[,4],col="red")
-lines(temp[,2], temp[,5],col="pink")
-lines(temp[,2], temp[,6],col="green")
-lines(temp[,2], temp[,7],col="green")
-
-
-
-row(4)
-
-temp <- aggregate(cbind(spruce.lar.mean, spruce.med.mean, spruce.sma.mean,
-                        pine.lar.mean, pine.med.mean, pine.sma.mean)~Month+Hour, data=subset(rad.profile.ratios, rad.profile.ratios$Month==9&rad.profile.ratios$Year==2019), FUN=mean, na.rm=T)
-
-plot(temp[,2], temp[,3], ylim=c(0,1), col="blue")
-lines(temp[,2], temp[,4],col="red")
-lines(temp[,2], temp[,5],col="pink")
-lines(temp[,2], temp[,6],col="green")
-lines(temp[,2], temp[,7],col="black")
-
-# RADIAL RATIOS [not in use - Jul22] - SAVE DATAFRAME: rad.profile.ratios   ----------------------------------------------------------------
-
-
-
-write.table(rad.profile.ratios, "rad.profile.ratios.June072020.csv", sep=",", row.names = F)
-
-
-# STACK FD - all.nodes.raw.Fd   ----------------------------------------------------------------
-
-# Why? Because we are going to create a continuous Js reduction ratios for each species
-
-# List of sensors that need to be stacked
-
-
-list.rad <- c("Fd_NodeONE_10Spruce10_24CM_Random_15.25DIAM_",
-              "Fd_NodeONE_11Spruce10_46CM_Random_15.25DIAM_",
-              "Fd_NodeONE_12Spruce11_24CM_Random_25.30DIAM_",
-              "Fd_NodeONE_13Spruce11_46CM_Random_25.30DIAM_",
-              "Fd_NodeONE_14Pine12_02CM_Random_15.25DIAM_",
-              "Fd_NodeONE_15Pine12_24CM_Random_15.25DIAM_",
-              "Fd_NodeONE_16Pine12_46CM_Random_15.25DIAM_",
-              "Fd_NodeONE_17Pine1_46CM_Random_25.30DIAM_",
-              "Fd_NodeONE_18Spruce2_02CM_Random_7.15DIAM_",
-              "Fd_NodeONE_19Pine17_02CM_Random_25.30DIAM_",
-              "Fd_NodeONE_21Spruce2_24CM_Random_7.15DIAM_",
-              "Fd_NodeONE_22Pine1_24CM_Random_25.30DIAM_",
-              "Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_",
-              "Fd_NodeONE_25Pine17_24CM_Random_25.30DIAM_",
-              "Fd_NodeONE_27Pine7_24CM_Random_7.15DIAM_",
-              "Fd_NodeONE_29Pine7_02CM_Random_7.15DIAM_",
-              "Fd_NodeONE_30Spruce11_02CM_Random_25.30DIAM_",
-              "Fd_NodeONE_31Spruce4_02CM_Random_15.25DIAM_",
-              "Fd_NodeONE_32Spruce11_68CM_Random_25.30DIAM_",
-              "Fd_NodeONE_33Pine1_68CM_Random_25.30DIAM_",
-              "Fd_NodeONE_34Spruce4_24CM_Random_15.25DIAM_",
-              "Fd_NodeONE_39Spruce18_68CM_Random_25.30DIAM_",
-              "Fd_NodeONE_40Pine13_68CM_Random_15.25DIAM_",
-              "Fd_NodeONE_41Spruce8_24CM_Random_15.25DIAM_",
-              "Fd_NodeONE_42Spruce8_02CM_Random_15.25DIAM_",
-              "Fd_NodeONE_43Pine13_02CM_Random_15.25DIAM_",
-              "Fd_NodeONE_44Pine13_24CM_Random_15.25DIAM_",
-              "Fd_NodeONE_45Pine13_46CM_Random_15.25DIAM_",
-              "Fd_NodeONE_46Spruce18_46CM_Random_25.30DIAM_",
-              "Fd_NodeONE_47Spruce10_68CM_Random_15.25DIAM_",
-              "Fd_NodeONE_48Pine12_68CM_Random_15.25DIAM_",
-              "Fd_NodeONE_49Spruce18_24CM_Random_25.30DIAM_",
-              "Fd_NodeONE_50Spruce18_02CM_Random_25.30DIAM_",
-              "Fd_NodeONE_6Pine9_02CM_Random_7.15DIAM_",
-              "Fd_NodeONE_8Pine9_24CM_Random_7.15DIAM_",
-              "Fd_NodeONE_9Spruce10_02CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_10Pine10_02CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_13Spruce8_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_14Pine10_24CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_18Pine19_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_19Spruce8_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_1Pine20_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_22Spruce11_24CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_23Spruce8_68CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_24Spruce8_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_26Pine3_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_27Pine6_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_28Pine6_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_29Pine6_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_30Pine6_68CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_31Spruce18_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_32Spruce12_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_33Spruce12_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_34Spruce12_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_37Spruce17_02CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_38Spruce17_24CM_Random_15.25DIAM_",
-              "Fd_NodeTHREE_42Pine3_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_44Pine20_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_45Spruce18_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_46Pine20_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_47Spruce18_68CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_48Spruce18_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_4Spruce13_24CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_50Spruce12_68CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_5Pine2_46CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_6Spruce13_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_8Pine2_68CM_Random_25.30DIAM_",
-              "Fd_NodeTHREE_9Pine2_24CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_10Spruce19_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_11Spruce19_68CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_12Spruce17_24CM_Random_7.15DIAM_",
-              "Fd_NodeTWO_13Spruce19_02CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_16Spruce3_02CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_17Spruce3_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_18Pine4_46CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_19Pine4_24CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_1Spruce18_68CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_23Pine4_02CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_24Pine4_68CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_25Pine12_68CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_26Pine12_46CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_27Pine11_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_29Pine12_24CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_2Pine20_68CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_30Pine11_02CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_31Spruce3_68CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_32Pine9_24CM_Random_7.15DIAM_",
-              "Fd_NodeTWO_33Pine9_02CM_Random_7.15DIAM_",
-              "Fd_NodeTWO_3Pine20_02CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_42Pine14_02CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_43Spruce15_02CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_44Pine14_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_45Spruce15_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_4Pine20_24CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_5Spruce18_46CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_6Spruce18_24CM_Random_15.25DIAM_",
-              "Fd_NodeTWO_7Pine20_46CM_Random_25.30DIAM_",
-              "Fd_NodeTWO_9Spruce17_02CM_Random_7.15DIAM_")
-
-
-# Subset of all data
-# But, it is really needed?
-
-stack.temp <- as.data.frame(subset(all.nodes.raw.Fd, select=c("Date", "DOY", unlist(list.rad))))
-NROW(stack.temp)                                
-
-#rm(stack.temp)
-
-plot(stack.temp$Date, stack.temp$Fd_NodeONE_8Pine9_24CM_Random_7.15DIAM_)
-
-# Create empty dataframe for stack
-
-# Create an empty data.frame 
-
-stack.Fd.rad <- setNames(as.data.frame(matrix(ncol = 3, nrow = length(list.rad)*NROW(all.nodes.raw.Fd) )),c("ID", "Js", "Date"))
-
-temp.date <- seq(as.POSIXct("2016/06/17", tz="UTC"), as.POSIXct("2020/12/30 23:30:00", tz="UTC"), by = "30 mins")
-
-stack.Fd.rad["Date"] <- rep(temp.date, NROW(list.rad))
-
-rm(temp.date)
-
-# Add ID name to empty data.frame
-
-names(stack.Fd.rad)
-
-stack.Fd.rad["ID"] <- NA
-
-ii=1
-j= 1
-jj= NROW(all.nodes.raw.Fd) 
-number = NROW(all.nodes.raw.Fd) 
-for (i in 1:NROW(list.rad)){
-  
-  name<-list.rad[ii]
-  
-  stack.Fd.rad[j:jj,"ID"] <- strrep(as.name(name), number)
-  
-  ii=ii+1
-  j=j+number
-  jj=jj+number
-  
-}
-
-# Add Js to each stack
-
-ii=1
-j= 1
-jj= NROW(all.nodes.raw.Fd) 
-number = NROW(all.nodes.raw.Fd) 
-for (i in 1:NROW(list.rad)){
-  
-  name<-list.rad[ii]
-  
-  stack.Fd.rad[j:jj,"Js"] <- stack.temp[name]
-  
-  ii=ii+1
-  j=j+number
-  jj=jj+number
-  
-}
-
-rm(i, ii, stack.temp, list.rad, j, jj)
-rm(name, number)
-
-#plot(stack.Fd.rad$Date, stack.Fd.rad$Js)
-
-# Add DBH
-
-#list <- names(all.nodes.raw.Fd)[3:75]
-
-tree.dat.temp["TreeID2"] <- paste(substr(tree.dat.temp$TreeID,1,nchar(as.character(tree.dat.temp$TreeID))-7),"Q" , sep = ".")
-tree.dat.temp["TID"] <- gsub(":", ".", substr(tree.dat.temp$TreeID,1,nchar(as.character(tree.dat.temp$TreeID))-7))
-
-
-list <- gsub(":", ".", substr(tree.dat.temp$TreeID,1,nchar(as.character(tree.dat.temp$TreeID))-7))
-
-stack.Fd.rad["DBH"] <- NA
-
-i=1
-
-#### CRASHED HERE, what is going on?
-
-for (i in 1:NROW(list)){
-  
-  name<-list[i]
-  dbh <- tree.dat.temp$DBH[grep(name, tree.dat.temp$TID)]
-  
-  stack.Fd.rad[grep(name,stack.Fd.rad$ID),"DBH"] <- dbh
-  
-  i=i+1
-  
-}
-
-rm(list, dbh, tree.id, species)
-
-plot(stack.Fd.rad$DBH, stack.Fd.rad$Js)
-
-# Add sapwood depth for each tree:
-
-
-stack.Fd.rad["Ds"] <- NA
-stack.Fd.rad$Ds[stack.Fd.rad$Species=="Pine"] <- exp(par.estimates[5,2] + par.estimates[5,3] * log(stack.Fd.rad$DBH[stack.Fd.rad$Species=="Pine"]))
-
-stack.Fd.rad$Ds[stack.Fd.rad$Species=="Spruce"] <- exp(par.estimates[6,2] + par.estimates[6,3] * log(stack.Fd.rad$DBH[stack.Fd.rad$Species=="Spruce"]))
-
-
-rm(As, core.length, Ds, ii, list.rad, sap.set, species, tree.id, fd)
-
-#Clean
-rm(i,name, list, dbh)
-
-
-
-
-# Add depth, species and tree size
-
-stack.Fd.rad["Depth"] <- NA 
-
-stack.Fd.rad[grep("_02CM_",stack.Fd.rad$ID), "Depth"] <- 1
-stack.Fd.rad[grep("_24CM_",stack.Fd.rad$ID), "Depth"] <- 3
-stack.Fd.rad[grep("_46CM_",stack.Fd.rad$ID), "Depth"] <- 5
-stack.Fd.rad[grep("_68CM_",stack.Fd.rad$ID), "Depth"] <- 7
-
-stack.Fd.rad["Species"] <- NA 
-
-stack.Fd.rad[grep("Pine",stack.Fd.rad$ID), "Species"] <- "Pine"
-stack.Fd.rad[grep("Spruce",stack.Fd.rad$ID), "Species"] <- "Spruce"
-stack.Fd.rad[grep("Birch",stack.Fd.rad$ID), "Species"] <- "Birch"
-
-
-# Add relative position of Js inside Ds
-
-stack.Fd.rad["Djs"] <- stack.Fd.rad$Depth/stack.Fd.rad$Ds
-#ifelse(stack.Fd.rad$Depth>stack.Fd.rad$Ds, 1, stack.Fd.rad$Depth/stack.Fd.rad$Ds)
-
-
-#plot(stack.Fd.rad$Djs, stack.Fd.rad$Js)
-
-djs.temp <- aggregate(cbind(Js)~Species+DBH+Djs, data=subset(stack.Fd.rad, stack.Fd.rad$Month>5&stack.Fd.rad$Month<8), FUN=mean, na.rm=T, na.action=NULL)
-
-plot(djs.temp$Djs, djs.temp$Js, col=ifelse(djs.temp$Species=="Pine", "red", "blue"))
-
-
-# Add tree size
-
-stack.Fd.rad["Size"] <- NA 
-
-stack.Fd.rad[grep("_7.15DIAM_",stack.Fd.rad$ID), "Size"] <- "Small"
-stack.Fd.rad[grep("_15.25DIAM_",stack.Fd.rad$ID), "Size"] <- "Medium"
-stack.Fd.rad[grep("_25.30DIAM_",stack.Fd.rad$ID), "Size"] <- "Large"
-
-# Add month and year
-
-stack.Fd.rad["Hour"] <- lubridate::hour(stack.Fd.rad$Date)
-stack.Fd.rad["Month"] <- lubridate::month(stack.Fd.rad$Date)
-stack.Fd.rad["Year"] <- lubridate::year(stack.Fd.rad$Date)
-
-stack.Fd.rad["Mon.rat"] <- ifelse(stack.Fd.rad$Month>3&stack.Fd.rad$Month<10, "month.ratio", NA)
-
-# Important step, remove values that are zero
-
-
-
-stack.Fd.rad$Js[stack.Fd.rad$Js==0] <- NA
-
-
-plot(stack.Fd.rad$Date, stack.Fd.rad$Js)
-
-# STACK FD - all.nodes.raw.Fd BY DAY (Means or Sums) [Not used for radial profiles currently] ----------------------------------------------------------------
-
-
-$$$$$$$$$$$
-  
-  # Wait, what if we average on the original, and not the stacked file?
-  
-  $$$$$$$$$$$
-  
-  # Aggregate by DOY
-  
-  names(all.nodes.raw.Fd)
-
-stack.temp.means <- aggregate(cbind(Date, 
-                                    Fd_NodeONE_10Spruce10_24CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_11Spruce10_46CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_12Spruce11_24CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_13Spruce11_46CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_14Pine12_02CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_15Pine12_24CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_16Pine12_46CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_17Pine1_46CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_18Spruce2_02CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_19Pine17_02CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_21Spruce2_24CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_22Pine1_24CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_25Pine17_24CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_27Pine7_24CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_29Pine7_02CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_30Spruce11_02CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_31Spruce4_02CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_32Spruce11_68CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_33Pine1_68CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_34Spruce4_24CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_39Spruce18_68CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_40Pine13_68CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_41Spruce8_24CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_42Spruce8_02CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_43Pine13_02CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_44Pine13_24CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_45Pine13_46CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_46Spruce18_46CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_47Spruce10_68CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_48Pine12_68CM_Random_15.25DIAM_,
-                                    Fd_NodeONE_49Spruce18_24CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_50Spruce18_02CM_Random_25.30DIAM_,
-                                    Fd_NodeONE_6Pine9_02CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_8Pine9_24CM_Random_7.15DIAM_,
-                                    Fd_NodeONE_9Spruce10_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_10Pine10_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_13Spruce8_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_14Pine10_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_18Pine19_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_19Spruce8_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_1Pine20_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_22Spruce11_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_23Spruce8_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_24Spruce8_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_26Pine3_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_27Pine6_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_28Pine6_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_29Pine6_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_30Pine6_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_31Spruce18_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_32Spruce12_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_33Spruce12_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_34Spruce12_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_37Spruce17_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_38Spruce17_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTHREE_42Pine3_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_44Pine20_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_45Spruce18_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_46Pine20_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_47Spruce18_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_48Spruce18_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_4Spruce13_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_50Spruce12_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_5Pine2_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_6Spruce13_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_8Pine2_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTHREE_9Pine2_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_10Spruce19_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_11Spruce19_68CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_12Spruce17_24CM_Random_7.15DIAM_,
-                                    Fd_NodeTWO_13Spruce19_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_16Spruce3_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_17Spruce3_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_18Pine4_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_19Pine4_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_1Spruce18_68CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_23Pine4_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_24Pine4_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_25Pine12_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_26Pine12_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_27Pine11_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_29Pine12_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_2Pine20_68CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_30Pine11_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_31Spruce3_68CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_32Pine9_24CM_Random_7.15DIAM_,
-                                    Fd_NodeTWO_33Pine9_02CM_Random_7.15DIAM_,
-                                    Fd_NodeTWO_3Pine20_02CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_42Pine14_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_43Spruce15_02CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_44Pine14_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_45Spruce15_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_4Pine20_24CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_5Spruce18_46CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_6Spruce18_24CM_Random_15.25DIAM_,
-                                    Fd_NodeTWO_7Pine20_46CM_Random_25.30DIAM_,
-                                    Fd_NodeTWO_9Spruce17_02CM_Random_7.15DIAM_)~all.nodes.raw.Fd$DOY, data=all.nodes.raw.Fd,FUN=sum, na.rm=T, na.action=NULL)
-NROW(stack.temp.means)
-
-
-# Add date to aggregated database
-
-stack.temp.means["Date"] <- aggregate(cbind(Date)~DOY, data=all.nodes.raw.Fd,FUN=min, na.action=na.pass)[2]     
-
-stack.temp.means$Date <- as.POSIXct(stack.temp.means$Date, tz="UTC", origin='1970/01/01')
-
-# Just a plot to make sure things work
-
-plot(stack.temp.means$Date, stack.temp.means$Fd_NodeONE_8Pine9_24CM_Random_7.15DIAM_)
-
-
-# Create an empty data.frame 
-
-stack.Fd <- setNames(as.data.frame(matrix(ncol = 3, nrow = length(list)*NROW(stack.temp.means) )),c("ID", "Js", "Date"))
-
-temp.date <- seq(as.POSIXct("2016/06/17", tz="UTC"), as.POSIXct("2019/12/31 23:30:00", tz="UTC"), by = "day")
-
-stack.Fd["Date"] <- rep(stack.temp.means$Date, NROW(list.rad))
-
-rm(temp.date)
-
-
-# Add ID name to empty data.frame
-
-names(stack.Fd)
-
-stack.Fd["ID"] <- NA
-
-ii=1
-j= 1
-jj= NROW(stack.temp.means) 
-number = NROW(stack.temp.means) 
-for (i in 1:NROW(list.rad)){
-  
-  name<-list.rad[ii]
-  
-  stack.Fd[j:jj,"ID"] <- rep(name, number)
-  
-  ii=ii+1
-  j=j+number
-  jj=jj+number
-  
-}
-
-# Add Js to each stack
-
-ii=1
-j= 1
-jj= NROW(stack.temp.means) 
-number = NROW(stack.temp.means) 
-for (i in 1:NROW(list.rad)){
-  
-  name<-list.rad[ii]
-  
-  stack.Fd[j:jj,"Js"] <- stack.temp.means[name]
-  
-  ii=ii+1
-  j=j+number
-  jj=jj+number
-  
-}
-
-#Clean
-rm(i, ii, j, jj,name, number)
-
-#rm(list)
-
-rm(stack.temp.means)
-
-
-# Add depth, species and tree size
-
-stack.Fd["Depth"] <- NA 
-
-stack.Fd[grep("_02CM_",stack.Fd$ID), "Depth"] <- 1
-stack.Fd[grep("_24CM_",stack.Fd$ID), "Depth"] <- 3
-stack.Fd[grep("_46CM_",stack.Fd$ID), "Depth"] <- 5
-stack.Fd[grep("_68CM_",stack.Fd$ID), "Depth"] <- 7
-
-stack.Fd["Species"] <- NA 
-
-stack.Fd[grep("Pine",stack.Fd$ID), "Species"] <- "Pine"
-stack.Fd[grep("Spruce",stack.Fd$ID), "Species"] <- "Spruce"
-stack.Fd[grep("Birch",stack.Fd$ID), "Species"] <- "Birch"
-
-
-# Add tree size
-
-stack.Fd["Size"] <- NA 
-
-stack.Fd[grep("_7.15DIAM_",stack.Fd$ID), "Size"] <- "Small"
-stack.Fd[grep("_15.25DIAM_",stack.Fd$ID), "Size"] <- "Medium"
-stack.Fd[grep("_25.30DIAM_",stack.Fd$ID), "Size"] <- "Large"
-
-# Add month and year
-
-stack.Fd["Hour"] <- lubridate::hour(stack.Fd$Date)
-stack.Fd["Month"] <- lubridate::month(stack.Fd$Date)
-stack.Fd["Year"] <- lubridate::year(stack.Fd$Date)
-
-stack.Fd["Mon.rat"] <- ifelse(stack.Fd$Month>3&stack.Fd$Month<11, "month.ratio", NA)
-
-# Remove Js that equal zero (bad for radial profiles)
-
-stack.Fd$Js[stack.Fd$Js==0] <- NA
-
-
+write.table(wound.drift.fd, "Data/wound.drift.fd.csv", sep=",", row.names = FALSE)
 
 # END OF SECTION ----
 
-rm(b0, b1, col.qdz, dbh, readingsperhour, treeid, treeidlt, umecol, umecol_adj, x, y, ylim.q, ylim.qdz, area_site, y.d)
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 #
 #  RADIAL PROFILE PARAMETERS
 #
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
-# ESTIMATE::PARAMETERS - RADIAL PROFILE - 30-MIN  ----------------------------------------------------------------
+# In this section I fitted one radial profile every 30-minute interval
+# A model is used to estimate the parameters for a normalized radial profile (i.e., find the shape of the profile)
+# Parameters are used on trees that do not have sensors at various depths to predict expected radial profile
+# Radial profiles estimated for Large, Medium and Small trees (both species)
+# PREPARE: DAta for radial profiles  ----------------------------------------------------------------
 
 
 # Database to populate with data and parameters
@@ -2665,10 +2100,6 @@ rm(temp.dt)
 
 ## LARGE PINE
 
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth5cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==5&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth7cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==7&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
 
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_02CM_.*_25.30DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_24CM_.*_25.30DIAM_", names(wound.drift.fd))], na.rm=T)
@@ -2676,11 +2107,6 @@ depth5cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_46CM_.*_25.30DIAM_", names(w
 depth7cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_68CM_.*_25.30DIAM_", names(wound.drift.fd))], na.rm=T)
 
 nrow(wound.drift.fd)
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth5cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth5cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth7cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth7cm, FUN=mean, na.rm=T, na.action=NULL)
 
 dt.ratio.pars["p.1.lg"] <- depth1cm.ag
 dt.ratio.pars["p.3.lg"] <- depth3cm.ag
@@ -2698,16 +2124,6 @@ rm(depth1cm, depth3cm, depth5cm, depth7cm)
 rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 ## MEDIUM PINE
-
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth5cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==5&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth7cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==7&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth5cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth5cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth7cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth7cm, FUN=mean, na.rm=T, na.action=NULL)
 
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_02CM_.*_15.25DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_24CM_.*_15.25DIAM_", names(wound.drift.fd))], na.rm=T)
@@ -2731,12 +2147,6 @@ rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 ## SMALL PINE
 
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Small", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Pine"&stack.Fd.rad$Size=="Small", select=c("Date", "Depth", "Js"))
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
-
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_02CM_.*_7.15DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Pine.*_24CM_.*_7.15DIAM_", names(wound.drift.fd))], na.rm=T)
 
@@ -2751,8 +2161,6 @@ dt.ratio.pars["p.ra.3.sm"] <- ifelse((dt.ratio.pars$p.3.sm/dt.ratio.pars$p.1.sm)
 
 rm(depth1cm, depth3cm, depth5cm, depth7cm)
 rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
-
-
 
 par(mar=c(3, 3, 0, 0))
 
@@ -2774,15 +2182,6 @@ rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 ## LARGE SPRUCE
 
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth5cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==5&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-#depth7cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==7&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Large", select=c("Date", "Depth", "Js"))
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth5cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth5cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth7cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth7cm, FUN=mean, na.rm=T, na.action=NULL)
 
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_02CM_.*_25.30DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_24CM_.*_25.30DIAM_", names(wound.drift.fd))], na.rm=T)
@@ -2807,15 +2206,6 @@ rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 ## MEDIUM SPRUCE
 
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth5cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==5&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-#depth7cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==7&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Medium", select=c("Date", "Depth", "Js"))
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth5cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth5cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth7cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth7cm, FUN=mean, na.rm=T, na.action=NULL)
 
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_02CM_.*_15.25DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_24CM_.*_15.25DIAM_", names(wound.drift.fd))], na.rm=T)
@@ -2838,12 +2228,6 @@ rm(depth1cm, depth3cm, depth5cm, depth7cm)
 rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 ## SMALL SPRUCE
-
-#depth1cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==1&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Small", select=c("Date", "Depth", "Js"))
-#depth3cm <- subset(stack.Fd.rad, stack.Fd.rad$ID!="Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_"&stack.Fd.rad$Depth==3&stack.Fd.rad$Species=="Spruce"&stack.Fd.rad$Size=="Small", select=c("Date", "Depth", "Js"))
-
-#depth1cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth1cm, FUN=mean, na.rm=T, na.action=NULL)
-#depth3cm.ag <- aggregate(cbind(Depth, Js)~Date, data=depth3cm, FUN=mean, na.rm=T, na.action=NULL)
 
 depth1cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_02CM_.*_7.15DIAM_", names(wound.drift.fd))], na.rm=T)
 depth3cm.ag <- rowMeans(wound.drift.fd[grep("Spruce.*_24CM_.*_7.15DIAM_", names(wound.drift.fd))], na.rm=T)
@@ -2880,9 +2264,9 @@ rm(depth1cm, depth3cm, depth5cm, depth7cm)
 rm(depth1cm.ag, depth3cm.ag, depth5cm.ag, depth7cm.ag)
 
 # Fit parameters for each measurement 
-# Can also fit for a small subset
+# Test the graph with the small subset (else it might collapse)
 
-#####
+# ESTIMATE: Radial profile parameters. Every 30 minutes  ----------------------------------------------------------------
 
 # Try to fit parametres for a small subset
 
@@ -3140,7 +2524,8 @@ warnings()
 temp.dt.ratio.pars["Month"] <- lubridate::month(temp.dt.ratio.pars$Date)
 temp.dt.ratio.pars["Hour"] <- lubridate::hour(temp.dt.ratio.pars$Date)
 
-#####
+# END OF SECTION ----
+
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -3149,8 +2534,8 @@ temp.dt.ratio.pars["Hour"] <- lubridate::hour(temp.dt.ratio.pars$Date)
 #
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
-# ADJUST - RADIAL PROFILE - MAIN LOOP [RADIAL PROFILE EQUATIONS]  ----------------------------------------------------------------
 # This section estimates sap flow using radial profiles for each species
+# ADJUST - RADIAL PROFILE - MAIN LOOP [RADIAL PROFILE EQUATIONS]  ----------------------------------------------------------------
 
 # Extract names of actual database
 
@@ -3165,9 +2550,6 @@ sapflow.temp$Date <- wound.drift.fd$Date
 
 
 tree.dat.temp["TreeID2"] <- paste(substr(tree.dat.temp$TreeID,1,nchar(as.character(tree.dat.temp$TreeID))-7),"Q" , sep = ".")
-
-# Why this?
-#wound.drift.fd <- wound.drift.fd[2:75]
 
 str(tree.dat.temp$TreeID)
 
@@ -3204,12 +2586,10 @@ for(i in 1:NCOL(wound.drift.fd)){
   #plot(temp.dt$Ds[2:50], temp.dt$Asi[2:50])
   
   ii = 1
-  
-  
   #NROW(fd)
   for(ii in 1:NROW(fd)){
     #for(ii in 1:100){
-    
+
     #####
     if(species=="Pine"){
       b0 = temp.dt.ratio.pars$pine.a[ii]
@@ -3219,26 +2599,10 @@ for(i in 1:NCOL(wound.drift.fd)){
       b1 = temp.dt.ratio.pars$spruce.b[ii]
     }
     
-    #rep(Ds, NROW(temp.dt))
-    
     temp.dt["Js"] <- rep(fd[ii,], NROW(temp.dt))
-    
-    #temp.dt["Ratio"] <- b0*(1-exp(-b1*temp.dt$Depth))*(b0*exp(-b2*temp.dt$Depth)*temp.dt$Depth+(b3-b4*temp.dt$Depth))
     temp.dt["Ratio"] <- b0*exp(-0.5*((temp.dt$Depth-0.125)/b1)^2)
     temp.dt["Jsa"] <- temp.dt$Js*temp.dt$Ratio
-    
-    
     temp.dt["Qi"] <- (temp.dt$Jsa*temp.dt$Asi)/1000
-    # temp.dt["Qi.perc"] <- temp.dt$Qi/sum(temp.dt$Qi)
-    # mean(temp.dt$Jsa*temp.dt$Ratio)
-    
-    #sum(temp.dt$Qi)
-    #fd[ii,]*sum(temp.dt$Asi)
-    #mean(temp.dt$Jsa)*sum(temp.dt$Asi)
-    #mean(temp.dt$Jsa*temp.dt$Qi.perc)
-    
-    
-    #b0*(1-exp(-b1*temp.dt$Depth))*(b0*exp(-b2*temp.dt$Depth)*temp.dt$Depth+(b3-b4*temp.dt$Depth))
     
     #lines(temp.dt$Depth, temp.dt$Jsa, col="blue", lwd=0.5)
     #points(1/8, fd[ii,], pch=19, cex=0.5, col="red")
@@ -3377,20 +2741,6 @@ all.nodes.sapflow <- aggregate(cbind(Date,
                                      Fd_NodeTHREE_48Spruce18_02CM_Random_25.30DIAM_,
                                      Fd_NodeTHREE_49Spruce16_02CM_Random_7.15DIAM_)~Date.d, sapflow.temp, FUN=sum, na.rm=T, na.action=NULL)
 
-plot(all.nodes.sapflow$Date, all.nodes.sapflow$Fd_NodeONE_2Spruce19_02CM_East_15.25DIAM_.Q)
-
-pine.spruce.Q <- subset(all.nodes.sapflow, all.nodes.sapflow$Date.d>"2018-12-30"&all.nodes.sapflow$Date.d<"2020-01-01")
-
-names(pine.spruce.Q)[1:2]
-names(sapflow.birch.doy)[1:2]
-
-
-# SPECIAL DATA REQUEST BY CHRISTINA
-
-pine.spruce.birch.Q.2019 <- merge(pine.spruce.Q, sapflow.birch.doy, by.x = "Date.d", by.y="Date.doy")
-
-write.table(pine.spruce.birch.Q.2019, "pine.spruce.birch.Q.2019.csv", sep=",", row.names = F)
-
 
 # Add DATE, YEAR, MONTH
 
@@ -3399,9 +2749,10 @@ all.nodes.sapflow["Date"] <- aggregate(cbind(Date)~Date.d, sapflow.temp, FUN=min
 all.nodes.sapflow$Date <- as.POSIXct(all.nodes.sapflow$Date, origin="1970/01/1", tz="UTC")
 all.nodes.sapflow$Date <- as.Date(all.nodes.sapflow$Date)
 names(all.nodes.sapflow)
+
 # SAVE SAP FLOW DATABASE  ----------------------------------------------------------------
 
-#write.table(all.nodes.sapflow, "all.notes.sapflow_mar_08_2021.csv", sep=",", row.names = FALSE)
+#write.table(all.nodes.sapflow, "Data/all.nodes.sapflow.csv", sep=",", row.names = FALSE)
 
 names(all.notes.sapflow)
 # STACK - SAP FLOW BY DAY  ----------------------------------------------------------------
@@ -3513,25 +2864,6 @@ rm(col.del)
 
 # DATA labeled as "suspicious"
 
-# From "List"
-
-list[7]
-list[13]
-list[14]
-list[16] 
-list[17] #[fist year]
-list[26] #[empty]
-list[24] #[first year]
-list[32] #[last two years look suspicious]
-list[33] #[first two months]
-list[39] #[first two months]
-list[46] #(first year)
-list[47] #(first year ?)
-list[50] #(first year)
-list[51] #(first year)
-list[55] #(first year)
-list[67] #(suspicious. Too high in 2019)
-
 # Remove high values of suspicious sensor
 
 # Sensor from pine tree with excessively high Fd values in 2016
@@ -3544,14 +2876,6 @@ stack.sapflow$Sapflow[grep("Fd_NodeONE_30Spruce11_02CM_Random_25.30DIAM_.radial.
 
 plot(stack.sapflow$Sapflow[grep("Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_.radial.Q",stack.sapflow$ID)])
 
-Fd_NodeONE_23Pine1_02CM_Random_25.30DIAM_.radial.Q
-Fd_NodeONE_30Spruce11_02CM_Random_25.30DIAM_.radial.Q
-
-#plot(subset(stack.sapflow, stack.sapflow$ID==list[17], select=c("Date", "Sapflow")))
-
-#suspicious <- list[c(7,13, 14, 16, 17, 24, 26, 32, 33, 39, 46, 47, 50, 51, 55, 67)]
-
-#rm(suspucious)
 
 
 
@@ -3575,11 +2899,6 @@ stack.sapflow$Species[grep("Spruce", stack.sapflow$ID)] <- "Spruce"
 plot(daily.data$Date, daily.data$spei)
 
 names(daily.data)
-
-
-#write.table(stack.sapflow, "stack.sapflow.March.08.2021.csv", sep=",", row.names = F)
-
-
 
 # ADD - MAIN ENVIRONMENTAL VARIABLES TO daily.data   ----------------------------------------------------------------
 
@@ -3664,4 +2983,701 @@ stk.sf.met["Species"] <- NA
 stk.sf.met$Species[grep("Pine", stk.sf.met$ID)] <- "Pine"
 stk.sf.met$Species[grep("Spruce", stk.sf.met$ID)] <- "Spruce"
 
+
+write.table(stk.sf.met, "Data/stk.sf.met.csv", sep=",", row.names = F)
+
+# END OF SECTION ----
+
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+#
+#  KEY FIGURES 
+#
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+
+# FIGURE::THREE:: MEAN DAILY SAP FLOW  ----------------------------------------------------------------
+
+##### 
+
+umecol <- c("firebrick1", "firebrick",
+            "dodgerblue1","dodgerblue3", 
+            "darkorchid1","darkorchid3",
+            "cyan2","cyan3",
+            "blue1", "blue3",
+            "chartreuse2", "chartreuse4")
+
+umecol_adj <- adjustcolor(c("firebrick1", "firebrick",
+                            "dodgerblue1","dodgerblue3", 
+                            "darkorchid1","darkorchid3",
+                            "cyan2","cyan3",
+                            "blue1", "blue3",
+                            "chartreuse2", "chartreuse4"), alpha.f = 0.1)
+
+#y.d <- c(2017, 2018, 2019)
+
+##### 
+split.screen(rbind(c(0.1, 0.75, 0.1, 0.98),
+                   c(0.76, 0.98, 0.1, 0.98)))
+
+screen(1)
+
+par(mar = c(0.0, 0, 0, 0))
+
+plot(NULL,  
+     type="n", 
+     xaxs = "r",
+     xaxt="n",
+     xlab = "",
+     ylab = "",
+     ylim = c(-1.5,20),
+     xlim= c(1,89),
+     col = "blue", pch=16 )
+
+axis(side = 1, at = c(5,14,23, 37, 45, 54, 66, 75, 84),  labels = FALSE)
+axis(side=1, at = c(5,14,23, 37, 45, 54, 66, 75, 84), tck=1, lwd = 0, 
+     label= c("May", "Jul", "Sept", "May", "Jul", "Sept", "May", "Jul", "Sept"),line = 0, cex.axis=1)
+
+
+mtext(c("2017", "2018", "2019"), side = 3, at=c(15, 47, 79) ,line = -1.5, cex = 1.2, col="deeppink")
+
+#mtext("All trees", side = 3, at= 0.2, line = -2, cex = 1, col="black")
+
+#abline(0,1, col="grey", lty=3, lwd=3)
+
+#mtext(bquote("PAR"[z] ~'('*mu*'mol' *' '* 'm'^-2 *' '*'s'^-1*')'), side = 1, at=2, outer = FALSE,  cex = 1.1, line =2.5, col = "black")
+
+mtext(expression('Mean sap flow (Q, Liters'*' '* 'd'^-1 * ')'), side = 2, outer = FALSE, cex = 1.1, line = 2, col = "black")
+
+temp.mod <- subset(stk.sf.met, stk.sf.met$Year>2016&
+                     stk.sf.met$ID!="Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_.Q"&
+                     stk.sf.met$Sapflow>0&
+                     stk.sf.met$P_1_1_1.no.mis<1&
+                     stk.sf.met$Month>3& stk.sf.met$Month<11, 
+                   select=c("Year", "Week", "Date", "PARz", "Dz", "Sapflow", "Month", "spei"))
+
+temp.mod$Date <- lubridate::date(temp.mod$Date)
+
+temp.mod.agg.date <- aggregate(cbind(Sapflow, PARz, Dz , Month, spei)~Date, data=temp.mod, FUN=mean, na.rm=T, na.action=NULL)
+
+temp.mod.agg.date["Week"] <- lubridate::week(temp.mod.agg.date$Date)
+temp.mod.agg.date["Year"] <- lubridate::year(temp.mod.agg.date$Date)
+
+
+temp.mod.agg <- aggregate(cbind(Sapflow, Date, spei)~Week+Year, data=temp.mod.agg.date, FUN=mean, na.rm=T, na.action=NULL)
+
+
+temp.mod.agg["stderr"] <- aggregate(cbind(Sapflow)~Week+Year, data=temp.mod, FUN=mad)["Sapflow"]
+
+temp.mod.agg["Week"] <- seq(1:NROW(temp.mod.agg))
+
+
+temp <- subset(temp.mod.agg, temp.mod.agg$Year=="2017")
+#temp["Week"] <- seq(1,NROW(temp))
+
+polygon(c(temp$Week, rev(temp$Week)),c((temp[,3]+temp[,6]), rev(temp[,3]-temp[,6])), border=FALSE, col=umecol_adj[3])
+
+lines(temp$Week, temp$Sapflow, col=umecol[9],lty=1, lwd=3)
+
+lines(temp$Week, temp$Sapflow+temp[,6], col=umecol[9],lty=3)
+lines(temp$Week, temp$Sapflow-temp[,6], col=umecol[9],lty=3)
+
+# SPEI polygon
+col.spei <- ifelse(temp$spei<(-1.5), "red", 
+                   ifelse(temp$spei>(-1.5)&temp$spei<(-0.5), "orange",
+                          ifelse(temp$spei>(-0.5)&temp$spei<0.5, "darkgreen", "blue")))
+
+points(temp$Week, rep(-0.5, NROW(temp)), pch=15, col = col.spei, cex=1.5)
+
+# // Add SPEI legend
+
+legend(15,-1,legend = c("SPEI:","Severe", "Mild", "Normal", "Wet"), pch=15,  ncol=5,col=c("White","Red", "Orange", "Darkgreen", "Blue"), cex=1, bty="n")
+
+rm(col.spei)
+
+temp <- subset(temp.mod.agg, temp.mod.agg$Year=="2018")
+
+polygon(c(temp$Week, rev(temp$Week)),c((temp[,3]+temp[,6]), rev(temp[,3]-temp[,6])), border=FALSE, col=umecol_adj[3])
+
+lines(temp$Week, temp$Sapflow, col=umecol[9],lty=1, lwd=3)
+
+lines(temp$Week, temp$Sapflow+temp[,6], col=umecol[9],lty=3)
+lines(temp$Week, temp$Sapflow-temp[,6], col=umecol[9],lty=3)
+
+# SPEI polygon
+col.spei <- ifelse(temp$spei<(-1.5), "red", 
+                   ifelse(temp$spei>(-1.5)&temp$spei<(-0.5), "orange",
+                          ifelse(temp$spei>(-0.5)&temp$spei<0.5, "darkgreen", "blue")))
+
+points(temp$Week, rep(-0.5, NROW(temp)), pch=15, col = col.spei, cex=1.5)
+
+rm(col.spei)
+
+temp <- subset(temp.mod.agg, temp.mod.agg$Year=="2019")
+
+polygon(c(temp$Week, rev(temp$Week)),c((temp[,3]+temp[,6]), rev(temp[,3]-temp[,6])), border=FALSE, col=umecol_adj[3])
+
+
+lines(temp$Week, temp$Sapflow, col=umecol[9],lty=1, lwd=3)
+
+lines(temp$Week, temp$Sapflow+temp[,6], col=umecol[9],lty=3)
+lines(temp$Week, temp$Sapflow-temp[,6], col=umecol[9],lty=3)
+
+# SPEI polygon
+col.spei <- ifelse(temp$spei<(-1.5), "red", 
+                   ifelse(temp$spei>(-1.5)&temp$spei<(-0.5), "orange",
+                          ifelse(temp$spei>(-0.5)&temp$spei<0.5, "darkgreen", "blue")))
+
+points(temp$Week, rep(-0.5, NROW(temp)), pch=15, col = col.spei, cex=1.5)
+
+rm(col.spei)
+
+rm(temp.mod)
+
+
+screen(2)
+
+par(mar = c(0.0, 0, 0, 0))
+
+plot(NULL,  
+     type="n", 
+     xaxs = "r",
+     xaxt="n",
+     yaxt="n",
+     xlab = "",
+     ylab = "",
+     ylim = c(-1.5,20),
+     xlim = c(0,3), col = "blue", pch=16 )
+
+temp.mod  <- subset(stk.sf.met, stk.sf.met$Year>2016&
+                      stk.sf.met$ID!="Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_.Q"&
+                      stk.sf.met$Sapflow>0&
+                      stk.sf.met$P_1_1_1.no.mis<1&
+                      stk.sf.met$Month>3& stk.sf.met$Month<11, 
+                    select=c("Year", "Week", "Date", "PARz", "Dz", "Sapflow", "Month", "spei"))
+
+temp.mod.agg.date <- aggregate(cbind(Sapflow, PARz, Dz , Month, spei)~Date, data=temp.mod, FUN=mean, na.rm=T, na.action=NULL)
+temp.mod.agg.date["Year"] <- lubridate::year(temp.mod.agg.date$Date)
+
+# Extract statistics 
+
+sf <- temp.mod.agg.date$Sapflow
+yr <- temp.mod.agg.date$Year
+
+sf.aov <- aov(yr~sf, data=temp.mod.agg.date)
+
+sf.aov <- summary(sf.aov)
+
+p.value <- ifelse(sf.aov[[1]]$`Pr(>F)`[1]<0.0001, 0.0001, sf.aov[[1]]$`Pr(>F)`[1])
+
+f.value <- sf.aov[[1]]$`F value`[1]
+
+# // Add legend & insert predicted parameters for each site
+
+expr <- vector("expression", 2)
+expr[[1]] <- bquote(bold("ANOVA"))
+expr[[2]] <- bquote(~"F="~ .(round(f.value,2)))
+expr[[3]] <- bquote(  ~ "Pvalue="~"<" ~.(format(round(p.value, 5), scientific=F)))
+
+legend(0,20,legend = expr, pch=NA,  ncol=1,col="white", cex=0.8, bty="n")
+
+rm(sf, yr, sf.aov, expr, p.value, f.value)
+rm(expr)
+
+b2017 <- data.frame(subset(temp.mod.agg.date, temp.mod.agg.date$Year==2017, select=c("Sapflow")))
+b2018 <- data.frame(subset(temp.mod.agg.date, temp.mod.agg.date$Year==2018, select=c("Sapflow")))
+b2019 <- data.frame(subset(temp.mod.agg.date, temp.mod.agg.date$Year==2019, select=c("Sapflow")))
+
+par(new = TRUE)
+
+par(mar = c(0, 0, 0, 0))
+
+boxplot(c(b2017, b2018, b2019), col=c(umecol[9]),bty="n",frame=F,
+        xaxt="n", 
+        yaxt="n",
+        ylim = c(-1.5,20))
+
+axis(side = 1, at = c(1,2,3),  labels = FALSE)
+axis(side=1, at = c(1,2,3), tck=1, lwd = 0, 
+     label= c("2017","2018", "2019"),line = 0, cex.axis=1)
+
+
+# Just for reference, do not use
+#axis(side=2, at = pretty(range(-0.05,15)))
+
+# Add means to box plots
+
+expr <- vector("expression", 2)
+
+expr[[1]] <- bquote(.(round(mean(na.omit(b2017[,])),2)))
+expr[[2]] <- bquote(.(round(mean(na.omit(b2018[,])),2)))
+expr[[3]] <- bquote(.(round(mean(na.omit(b2019[,])),2)))
+
+loc.x <- c(bquote(.(round(mean(na.omit(b2017[,])),2))), 
+           bquote(.(round(mean(na.omit(b2018[,])),2))),
+           bquote(.(round(mean(na.omit(b2019[,])),2))))
+
+text(c(1, 2, 3), loc.x, expr,col="white", cex=1.2)
+
+rm(b2017, b2018, b2019,  expr, loc.x)
+
+rm(pchplot, legend)
+
+rm(temp.mod, temp.mod.agg)
+
+close.screen(all.screens = TRUE)
+# END OF SECTION ----
+
+# STATISTICAL ANAYSES - FIGURE 3
+##### 
+temp.barplot <- subset(stk.sf.met, stk.sf.met$Year>2016&
+                         stk.sf.met$ID!="Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_.Q"&
+                         
+                         stk.sf.met$Month>4&stk.sf.met$Month<10&
+                         stk.sf.met$Sapflow>0&
+                         stk.sf.met$Dz.nomiss>0.1&stk.sf.met$P_1_1_1.no.mis<1,
+                       select=c(Date, Species, Dz, Q.ba, spei,Sapflow,Q.Dz, drought.range))
+temp.barplot["Year"] <- lubridate::year(temp.barplot$Date)
+
+temp.barplot.ag.date <- aggregate(cbind(Q.Dz, Dz, Sapflow, Year)~Date, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL)
+
+tapply(temp.barplot.ag.date$Q.Dz, temp.barplot.ag.date$Year, FUN=mean, na.rm=T) 
+
+par(mar = c(2, 5, 0.5, 0.5))
+
+plot(temp.barplot.ag.date$Date, temp.barplot.ag.date$Q.Dz)
+# Extract statistics 
+
+sf <- temp.barplot.ag.date$Q.Dz
+yr <- temp.barplot.ag.date$Year
+
+aov <- aov(yr~sf, data=temp.barplot.ag.date)
+
+aov <- summary(aov)
+
+rm(temp.barplot,temp.barplot.ag.date)
+rm(sf, yr, aov)
+
+# END OF SECTION ----
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+# FIGURE::FOUR:: MEAN SAP FLOW BY TREE SIZE & DROUGHT RANGE ----------------------------------------------------------------
+
+##### 
+
+umecol <- c("firebrick1", "firebrick",
+            "dodgerblue1","dodgerblue3", 
+            "darkorchid1","darkorchid3",
+            "cyan2","cyan3",
+            "blue1", "blue3",
+            "chartreuse2", "chartreuse4")
+
+st.err <-function(x){sd(x)/sqrt(length(x))}
+
+#ylim.qdz <- c(0,250)
+y.d <- c(2018)
+
+#plot(stk.sf.met$Date[stk.sf.met$ID=="Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_.Q"], stk.sf.met$Sapflow[stk.sf.met$ID=="Fd_NodeTHREE_7Pine19_02CM_Random_25.30DIAM_.Q"])
+ylim.q <- c(0,9)
+
+size.id <- c("Large", "Medium", "Small")
+
+col.qdz <- c(umecol[1], umecol[3])
+
+par(mfrow =c(1,3)) 
+
+i=1
+for (i in 1:3) {
+  
+  temp.barplot <- subset(stk.sf.met, stk.sf.met$Year%in%y.d&
+                           stk.sf.met$Repeat=="Unique"&
+                           stk.sf.met$Month>4&stk.sf.met$Month<10&
+                           stk.sf.met$Sapflow>0&
+                           stk.sf.met$Dz>0.1&stk.sf.met$P_1_1_1.no.mis<1&
+                           stk.sf.met$DBH.range==size.id[i], 
+                         select=c(Date, Species, Dz, spei,Sapflow,Q.Dz, drought.range))
+  temp.barplot$Date <- lubridate::date(temp.barplot$Date)
+  
+  temp.barplot <- aggregate(cbind(Dz, Sapflow,Q.Dz)~Date+Species+drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL)
+  
+  temp.barplot["ID"] <- paste(temp.barplot$drought.range, temp.barplot$Species, sep=" ")
+  
+  
+  temp.barplot.mn<- as.vector(aggregate(cbind(Sapflow, Q.Dz)~ID, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL))
+  
+  
+  ylim.qdz <- c(0,max(temp.barplot.mn$Q.Dz)*1.3)
+  
+  par(mar = c(4, 5, 0.5, 0.5))
+  
+  plot(NULL,  
+       type="n", 
+       xaxs = "r",
+       xaxt = "n",
+       xlab = " ",
+       ylab = " ",
+       xlim = c(0,6),
+       ylim = ylim.qdz, col = "blue", pch=16 )
+  
+  #axis(side = 2, at = c(0, 5, 10, 15, 20, 25, 30),  labels = FALSE)
+  #axis(side=2, at = c(0, 5, 10, 15, 20, 25, 30), tck=0.1, lwd = 0, label= c(0, 5, 10, 15, 20, 25, 30),line = 0, cex.axis=1)
+  
+  mtext(size.id[i], side = 3,  line = -2, cex = 1, col="deeppink")
+  
+  mtext(expression('Q'[Dz] ~'(Liters'*' '*'day'^-1 *' '*'kPa'^-1 * ')'), side=2, outer=F, cex=0.8, line=2, col="black")
+  mtext(expression('Drought range'), side=1, outer=F, cex=0.8, line=3, col="black")
+  
+  
+  if(i==1){
+    
+    legend("topleft",  legend = c("Pine", "Spruce"), fill = c(umecol[1], umecol[3]),
+           density = c(200, 200, 200), angle = c( 0, 0,0), bty="n", ncol=1, cex=1)
+    
+  }
+  
+  
+  par(new=TRUE)
+  
+  barplot( Q.Dz~ ID, temp.barplot.mn,
+           #      xlim=c(0,6),
+           xaxt= "n",
+           yaxt= "n",
+           xlab= " ",
+           ylab= " ",
+           ylim = ylim.qdz,
+           space=c(0.1,0.1,0.5,0.1,0.5,0.1,0.5,0.1), 
+           col=col.qdz)
+  
+  temp.barplot.sterr <- as.vector(aggregate(cbind(Sapflow, Q.Dz)~ID, data=temp.barplot, FUN=st.err))[2:3]
+  
+  arrows(c(0.6, 1.7, 3.2, 4.3,5.8, 6.9, 8.4, 9.5), temp.barplot.mn$Q.Dz-temp.barplot.sterr$Q.Dz, 
+         c(0.6, 1.7, 3.2, 4.3,5.8, 6.9, 8.4, 9.5), temp.barplot.mn$Q.Dz+temp.barplot.sterr$Q.Dz, length=0.05, angle=90, code=3,lwd= 2, col="grey")
+  
+  axis(side=1, at = c(1.3,3.7,6.1, 8.5), tck=0.1, lwd = 0, label= c("Severe", "Mild", "Normal", "Wet"),line = 0, cex.axis=1)
+  
+  
+  # Add average change
+  expr <- vector("expression", 2)
+  
+  expr[[1]] <- bquote(.(round((temp.barplot.mn[1,3]-temp.barplot.mn[5,3])/temp.barplot.mn[5,3]*100,0)))
+  expr[[2]] <- bquote(.(round((temp.barplot.mn[2,3]-temp.barplot.mn[6,3])/temp.barplot.mn[6,3]*100,0)))
+  
+  
+  loc.x <- c(temp.barplot.mn[1,3]+temp.barplot.mn[1,3]*0.15,temp.barplot.mn[2,3]+temp.barplot.mn[2,3]*0.15)
+  
+  text(c(0.6, 1.7), loc.x, expr,col="blue", cex=1)
+  
+  # Arrows for percent change
+  
+  arrows(c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6], 
+         c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, length=0, angle=0, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  arrows(c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, 
+         c(0.7, 1.9), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, length=0, angle=0, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  arrows(c(0.7, 1.9), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, 
+         c(0.7, 1.9), loc.x+loc.x*0.2, length=0.1, angle=45, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  
+  ### Extract statistics 
+  
+  sf <- as.numeric(temp.barplot$Q.Dz)
+  ID <- temp.barplot$ID
+  
+  sf.aov <- aov(sf~ID)
+  
+  sf.aov <- summary(sf.aov)
+  
+  p.value <- ifelse(sf.aov[[1]]$`Pr(>F)`[1]<0.001, 0.0001, sf.aov[[1]]$`Pr(>F)`[1])
+  
+  f.value <- sf.aov[[1]]$`F value`[1]
+  
+  # // Add legend & insert predicted parameters for each site
+  
+  expr <- vector("expression", 2)
+  expr[[1]] <- bquote(italic("ANOVA"))
+  expr[[2]] <- bquote(~"F="~ .(round(f.value,2)))
+  expr[[3]] <- bquote(  ~ "Pvalue="~"<" ~.(format(p.value, scientific=F)))
+  
+  #legend(3.7,max(temp.barplot.mn$Q.Dz)*1.2,legend = expr, pch=NA,  ncol=1,col="white", cex=1, bty="n")
+  
+  rm(sf, ID, sf.aov, p.value, f.value)
+  
+  rm(expr, loc.x)
+  
+  rm(temp.barplot, temp.barplot.mn)
+  
+  rm(temp.barplot.sterr)
+  
+  
+  i=1+1
+  
+}
+
+# END OF SECTION ----
+
+
+# STATISTICAL ANAYSES - FIGURE 4
+##### 
+y.d <- c(2018) 
+i=1
+for (i in 1:3) {
+  
+  temp.barplot <- subset(stk.sf.met, stk.sf.met$Year%in%y.d&
+                           stk.sf.met$Repeat=="Unique"&
+                           stk.sf.met$Month>4&stk.sf.met$Month<10&
+                           stk.sf.met$Sapflow>0&
+                           stk.sf.met$Dz>0.1&stk.sf.met$P_1_1_1.no.mis<1&
+                           stk.sf.met$DBH.range==size.id[i], 
+                         select=c(Date, Species, Dz, spei,Sapflow,Q.Dz, drought.range))
+  temp.barplot$Date <- lubridate::date(temp.barplot$Date)
+  
+  temp.barplot <- aggregate(cbind(Dz, Sapflow,Q.Dz)~Date+Species+drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL)
+  
+  temp.barplot["ID"] <- paste(temp.barplot$drought.range, temp.barplot$Species, sep=" ")
+  
+  
+  temp.barplot.mn<- as.vector(aggregate(cbind(Sapflow, Q.Dz)~drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL))
+  
+  expr <- vector("expression", 1)
+  
+  expr[[1]] <- bquote(.(round((temp.barplot.mn[1,3]-temp.barplot.mn[3,3])/temp.barplot.mn[3,3]*100,0)))
+  expr[[2]] <- bquote(.(round((temp.barplot.mn[2,3]-temp.barplot.mn[6,3])/temp.barplot.mn[6,3]*100,0)))
+  
+  print(expr)
+  
+  
+  i=i+1
+}
+
+
+### Mean sap flow by year 
+
+temp.mod <- subset(stk.sf.met, stk.sf.met$Year>2016&
+                     stk.sf.met$Sapflow>0&
+                     stk.sf.met$Repeat=="Unique"&
+                     stk.sf.met$P_1_1_1.no.mis<1&
+                     stk.sf.met$Dz>0.1&
+                     stk.sf.met$Month>3&stk.sf.met$Month<11, 
+                   select=c("Year", "Week", "Date", "PARz", "Dz", "Sapflow", "Month"))
+
+b2017 <- data.frame(subset(temp.mod, temp.mod$Year==2017&temp.mod$Dz>0.1, select=c("Sapflow")))
+b2018 <- data.frame(subset(temp.mod, temp.mod$Year==2018&temp.mod$Dz>0.1, select=c("Sapflow")))
+b2019 <- data.frame(subset(temp.mod, temp.mod$Year==2019&temp.mod$Dz>0.1, select=c("Sapflow")))
+
+mean(b2017, na.rm=T)
+
+mean(na.omit(b2017[,]))
+mean(na.omit(b2018[,]))
+mean(na.omit(b2019[,]))
+
+mean(temp.mod$Sapflow[temp.mod$Year==2017], na.rm=T)
+mean(temp.mod$Sapflow[temp.mod$Year==2018], na.rm=T)
+mean(temp.mod$Sapflow[temp.mod$Year==2019], na.rm=T)
+
+rm(temp.mod, b2017, b2018, b2019)
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+# END OF SECTION ----
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+# FIGURE::FIVE:: BOREAL DROUGHT - MEAN SAP FLOW BY TOPOGRAPHIC POSSITION & DROUGHT RANGE ----------------------------------------------------------------
+
+##### 
+
+umecol <- c("firebrick1", "firebrick",
+            "dodgerblue1","dodgerblue3", 
+            "darkorchid1","darkorchid3",
+            "cyan2","cyan3",
+            "blue1", "blue3",
+            "chartreuse2", "chartreuse4")
+
+st.err <-function(x){sd(x)/sqrt(length(x))}
+
+#ylim.qdz <- c(0,250)
+y.d <- c(2018)
+
+ylim.q <- c(0,9)
+
+possition.id <- c("Shoulderslope", "Backslope", "Footslope")
+
+col.qdz <- c(umecol[1], umecol[3])
+
+par(mfrow =c(1,3)) 
+i=1
+for (i in 1:3) {
+  
+  temp.barplot <- subset(stk.sf.met, stk.sf.met$Year%in%y.d&
+                           stk.sf.met$Repeat=="Unique"&
+                           stk.sf.met$Month>3&stk.sf.met$Month<11&
+                           stk.sf.met$Sapflow>0&
+                           stk.sf.met$Dz>0.1&stk.sf.met$P_1_1_1.no.mis<1&
+                           stk.sf.met$Possition==possition.id[i], 
+                         select=c(Date, Species, Dz, Ta_1_1_1, spei,Sapflow,Q.Dz, drought.range))
+  temp.barplot$Date <- lubridate::date(temp.barplot$Date)
+  
+  #temp.barplot["Q.Dz"] <- temp.barplot$Q.Dz*(115.8+0.423*temp.barplot$Ta_1_1_1)
+  
+  temp.barplot <- aggregate(cbind(Dz, Sapflow,Q.Dz)~Date+Species+drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL)
+  
+  temp.barplot["ID"] <- paste(temp.barplot$drought.range, temp.barplot$Species, sep=" ")
+  
+  temp.barplot.mn<- as.vector(aggregate(cbind(Sapflow, Q.Dz)~ID, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL))
+  
+  ylim.qdz <- c(0,max(temp.barplot.mn$Q.Dz)*1.3)
+  
+  par(mar = c(4, 5, 0.5, 0.5))
+  
+  plot(NULL,  
+       type="n", 
+       xaxs = "r",
+       xaxt = "n",
+       xlab = " ",
+       ylab = " ",
+       xlim = c(0,6),
+       ylim = ylim.qdz, col = "blue", pch=16 )
+  
+  mtext(possition.id[i], side = 3,  line = -2, cex = 1, col="deeppink")
+  
+  mtext(expression('Q'[Dz] ~'(Liters'*' '*'day'^-1 *' '*'kPa'^-1 * ')'), side=2, outer=F, cex=0.8, line=2, col="black")
+  
+  if(i==1){
+    
+    legend("topleft",  legend = c("Pine", "Spruce"), fill = c(umecol[1], umecol[3]),
+           density = c(200, 200, 200), angle = c( 0, 0,0), bty="n", ncol=1, cex=1)
+    
+  }
+  
+  par(new=TRUE)
+  
+  barplot( Q.Dz~ ID, temp.barplot.mn,
+           #      xlim=c(0,6),
+           xaxt= "n",
+           yaxt= "n",
+           xlab= " ",
+           ylab= " ",
+           ylim = ylim.qdz,
+           space=c(0.1,0.1,0.5,0.1,0.5,0.1,0.5,0.1), 
+           col=col.qdz)
+  
+  temp.barplot.sterr <- as.vector(aggregate(cbind(Sapflow, Q.Dz)~ID, data=temp.barplot, FUN=st.err))[2:3]
+  
+  arrows(c(0.6, 1.7, 3.2, 4.3,5.8, 6.9, 8.4, 9.5), temp.barplot.mn$Q.Dz-temp.barplot.sterr$Q.Dz, 
+         c(0.6, 1.7, 3.2, 4.3,5.8, 6.9, 8.4, 9.5), temp.barplot.mn$Q.Dz+temp.barplot.sterr$Q.Dz, length=0.05, angle=90, code=3,lwd= 2, col="grey")
+  
+  axis(side=1, at = c(1.3,3.7,6.1, 8.5), tck=0.1, lwd = 0, label= c("Severe", "Mild", "Normal", "Wet"),line = 0, cex.axis=1)
+  
+  
+  # Add average change
+  expr <- vector("expression", 2)
+  
+  expr[[1]] <- bquote(.(round((temp.barplot.mn[1,3]-temp.barplot.mn[5,3])/temp.barplot.mn[5,3]*100,0)))
+  expr[[2]] <- bquote(.(round((temp.barplot.mn[2,3]-temp.barplot.mn[6,3])/temp.barplot.mn[6,3]*100,0)))
+  
+  
+  loc.x <- c(temp.barplot.mn[1,3]+temp.barplot.mn[1,3]*0.15,temp.barplot.mn[2,3]+temp.barplot.mn[2,3]*0.15)
+  
+  text(c(0.6, 1.7), loc.x, expr,col="blue", cex=1)
+  
+  # Arrows for percent change
+  
+  arrows(c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6], 
+         c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, length=0, angle=0, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  arrows(c(5.5, 6.7), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, 
+         c(0.7, 1.9), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, length=0, angle=0, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  arrows(c(0.7, 1.9), temp.barplot.mn$Q.Dz[5:6]+temp.barplot.mn$Q.Dz[5:6]*0.15, 
+         c(0.7, 1.9), loc.x+loc.x*0.2, length=0.1, angle=45, code=2,lwd= 2, lty=1,col=col.qdz)
+  
+  
+  ### Extract statistics 
+  
+  sf <- as.numeric(temp.barplot$Q.Dz)
+  ID <- temp.barplot$ID
+  
+  #
+  
+  #wilcox.test(temp.barplot$Q.Dz~temp.barplot$ID, data=temp.barplot)
+  
+  #
+  
+  sf.aov <- aov(sf~ID)
+  
+  sf.aov <- summary(sf.aov)
+  
+  p.value <- ifelse(sf.aov[[1]]$`Pr(>F)`[1]<0.001, 0.0001, sf.aov[[1]]$`Pr(>F)`[1])
+  
+  f.value <- sf.aov[[1]]$`F value`[1]
+  
+  # // Add legend & insert predicted parameters for each site
+  
+  expr <- vector("expression", 2)
+  expr[[1]] <- bquote(italic("ANOVA"))
+  expr[[2]] <- bquote(~"F="~ .(round(f.value,2)))
+  expr[[3]] <- bquote(  ~ "Pvalue="~"<" ~.(format(p.value, scientific=F)))
+  
+  #legend(3.7,max(temp.barplot.mn$Q.Dz)*1.2,legend = expr, pch=NA,  ncol=1,col="white", cex=1, bty="n")
+  
+  rm(sf, ID, sf.aov, p.value, f.value)
+  
+  rm(expr, loc.x)
+  
+  rm(temp.barplot, temp.barplot.mn)
+  
+  rm(temp.barplot.sterr)
+  
+  
+  i=1+1
+  
+}
+
+##### 
+
+rm(i, possition.id, size.id, co.qdz, labels, ylim.q, ylim.qdz, y.d)
+rm(col.qdz, legend, umecol, umecol_adj, st.err)
+# END OF SECTION ----
+
+# STATISTICAL ANAYSES - FIGURE 5
+
+##### 
+
+possition.id <- c("Shoulderslope","Backslope",  "Footslope")
+
+
+i=1
+for (i in 1:3) {
+  
+  temp.barplot <- subset(stk.sf.met, stk.sf.met$Year%in%y.d&
+                           stk.sf.met$Repeat=="Unique"&
+                           stk.sf.met$Month>4&stk.sf.met$Month<10&
+                           stk.sf.met$Sapflow>0&
+                           stk.sf.met$Dz>0.1&stk.sf.met$P_1_1_1.no.mis<1&
+                           stk.sf.met$Possition==possition.id[i], 
+                         select=c(Date, Species, Dz, spei,Sapflow,Q.Dz, drought.range))
+  temp.barplot$Date <- lubridate::date(temp.barplot$Date)
+  
+  temp.barplot <- aggregate(cbind(Dz, Sapflow,Q.Dz)~Date+Species+drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL)
+  
+  temp.barplot["ID"] <- paste(temp.barplot$drought.range, temp.barplot$Species, sep=" ")
+  
+  
+  temp.barplot.mn<- as.vector(aggregate(cbind(Sapflow, Q.Dz)~drought.range, data=temp.barplot, FUN=mean, na.rm=T, na.action=NULL))
+  
+  print((temp.barplot.mn[1,3]-temp.barplot.mn[3,3])/temp.barplot.mn[3,3])
+  
+  print((temp.barplot.mn[1,3]-temp.barplot.mn[5,3])/temp.barplot.mn[5,3])
+  print((temp.barplot.mn[2,3]-temp.barplot.mn[6,3])/temp.barplot.mn[6,3])
+  
+}
+
+# END OF SECTION ----
+
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
